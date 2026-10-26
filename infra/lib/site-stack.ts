@@ -3,6 +3,7 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { COST_TAG_KEY, COST_TAG_VALUE, ENVIRONMENTS, ZONE_ID, ZONE_NAME } from './config.ts';
+import { PublishRole } from './publish-role.ts';
 import { SiteEnvironment } from './site-environment.ts';
 
 export interface SiteStackProps extends StackProps {
@@ -53,5 +54,15 @@ export class SiteStack extends Stack {
       lifecycleRules: [{ prefix: 'releases/', expiration: Duration.days(30) }],
     });
     Tags.of(this.releasesBucket).add(COST_TAG_KEY, COST_TAG_VALUE);
+
+    // 公開用ロール（GitHub Actions が OIDC で引き受ける。ZJS-8）。環境ごとに分ける。
+    for (const env of [this.production, this.preview]) {
+      new PublishRole(this, `${env.node.id}PublishRole`, {
+        name: env === this.production ? 'production' : 'preview',
+        siteBucket: env.bucket,
+        releasesBucket: this.releasesBucket,
+        distribution: env.distribution,
+      });
+    }
   }
 }

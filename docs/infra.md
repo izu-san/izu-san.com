@@ -34,12 +34,83 @@ pnpm exec cdk diff        # 適用済みとの差分（AWS の認証情報が必
 
 `CDK_DEFAULT_ACCOUNT` が未設定でも synth はできる。`cdk diff` と `cdk deploy` は、対象アカウントの認証情報で実行する。
 
-## bootstrap と権限
+## GitHub Actions の権限（OIDC、ZJS-8）
 
-- 初回だけ `cdk bootstrap aws://<アカウント>/us-east-1` が必要。CDKToolkit スタック（アセット用 S3 バケット、ECR リポジトリ、IAM ロール）を作る。S3 の保管料が少額かかりうる。
-- bootstrap とデプロイの権限は、コンテンツ公開の権限と分ける（仕様書 §9.3、ZJS-8）。
-- Route 53 の変更権限は、`izu-san.com`、`preview.izu-san.com` と ACM 検証レコードに限る。
-- 料金プランの権限は `pricingplanmanager` の `CreateSubscription`・`GetSubscription`・`ListSubscriptions`・`CancelSubscription` に限り、`ApprovePaidSubscription` と `UpdateSubscription` は付与しない。
+GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認証で AWS に入る。信頼条件は、すべて `StringEquals`（ワイルドカードなし）で、`aud=sts.amazonaws.com` と、次の `sub` に限る。
+
+| ロール | 定義 | 信頼する `sub` | できること |
+| --- | --- | --- | --- |
+| `izu-san-publish-production` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/main` | 本番の S3 への配置・削除、`releases/production/` の読み書き、本番ディストリビューションのキャッシュ無効化 |
+| `izu-san-publish-preview` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/preview` | プレビューの S3 への配置・削除、`releases/preview/` の読み書き、プレビューのディストリビューションのキャッシュ無効化 |
+| `izu-san-infra-diff` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra-diff` | CDK の lookup ロール（読み取りのみ）を引き受けて `cdk diff` する |
+| `izu-san-infra-deploy` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra` | CDK の deploy・file-publishing・lookup ロールを引き受けて `cdk deploy` する |
+
+- Pull Request のワークフロー（`verify.yml`）は `contents: read` だけで、`id-token: write` を持たない。OIDC の `sub` も PR のものは通らない。`tests/oidc.test.ts` が、PR で動くワークフローに AWS 関連の設定が入らないことを確認する。
+- `infra-diff` は承認なしで動くが、引き受けられるのは読み取り専用の lookup ロールだけ。インフラの更新に使うロール（`izu-san-infra-deploy`）の信頼条件は、承認必須の Environment `infra` だけ。
+- 成果物の保管先は環境ごとの接頭辞（`releases/production/<コミットID>/`、`releases/preview/<コミットID>/`）に分け、プレビューのロールが本番の保管済み成果物（ロールバックの元）を書き換えられないようにする。ライフサイクルの `releases/` 30 日は、両方に効く。
+- CloudFormation の実行ポリシー（`izu-san-cfn-execution`）は管理者権限にせず、S3・CloudFront・ACM・WAF、料金プラン（`CreateSubscription`・`GetSubscription`・`ListSubscriptions`・`CancelSubscription` のみ）、Route 53、公開用ロールの IAM だけを許可する。
+  - Route 53 の変更は条件キーで絞れる。対象は、このホストゾーンの `izu-san.com`・`preview.izu-san.com` の A/AAAA と、ACM 検証用の `_*.izu-san.com`・`_*.preview.izu-san.com` の CNAME。MX・TXT・NS・SOA などは拒否される。`_*` は検証レコード以外の `_` で始まる名前の CNAME も許すので、適用前の `route53-before.json` との差分確認は省かない。
+  - 初回の適用で権限不足が出たら、拒否された操作だけを足す。広いワイルドカードに戻さない。
+
+### 初期設定（サイト所有者が 1 回だけ。AWS・GitHub の変更なので、実行前に確認する）
+
+1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
+   ```bash
+   pnpm exec cdk diff IzuSanDeployer
+   pnpm exec cdk deploy IzuSanDeployer --exclusively
+   ```
+2. 作った実行ポリシーを使って bootstrap する。
+   ```bash
+   pnpm exec cdk bootstrap aws://<アカウント>/us-east-1 \
+     --cloudformation-execution-policies arn:aws:iam::<アカウント>:policy/izu-san-cfn-execution
+   ```
+3. GitHub に Environment を作る（リポジトリの Settings → Environments）。
+   - `infra-diff`: 承認なし。Deployment branches は `main` だけ。
+   - `infra`: Required reviewers にサイト所有者を設定する。起動する人と承認する人が同じになるため、「Prevent self-review」は有効にしない。Deployment branches は `main` だけ。
+   - 両方の Environment に、Secret `PREVIEW_AUTH_SHA256` と、変数 `AWS_ACCOUNT_ID` を登録する（下記）。
+4. ワークフロー `infra` を手動起動し、`diff` ジョブの要約を確認してから `infra` の承認を行う。
+
+### Secrets と変数の登録
+
+値自体はリポジトリに含めない。GitHub の画面か `gh` で登録する（値は標準入力で渡し、履歴に残さない）。
+
+| 名前 | 種別 | 置き場所 | 内容 |
+| --- | --- | --- | --- |
+| `PREVIEW_AUTH_SHA256` | Secret | `infra`・`infra-diff` | 「user:pass」の SHA-256（後述の手順で作る） |
+| `AWS_ACCOUNT_ID` | Variable | `infra`・`infra-diff` | AWS アカウント ID（ロールの ARN に使う） |
+
+```bash
+gh secret set PREVIEW_AUTH_SHA256 --env infra      # 値は標準入力で入力する
+gh secret set PREVIEW_AUTH_SHA256 --env infra-diff
+gh variable set AWS_ACCOUNT_ID --env infra --body <アカウント ID>
+gh variable set AWS_ACCOUNT_ID --env infra-diff --body <アカウント ID>
+```
+
+プレビューの平文の資格情報（`user:pass`）は、GitHub Actions では使わない。プレビューの公開ワークフロー（ZJS-9）が必要になったら、公開用の Environment に別途登録する。
+
+## インフラ適用ワークフロー（`infra.yml`）
+
+手動起動のみ（`workflow_dispatch`）。`main` 以外では動かない。
+
+1. `diff` ジョブ（Environment `infra-diff`、承認なし）が `cdk diff` を実行し、ジョブの要約（Summary）に出す。Function に入るプレビュー認証のハッシュは `[REDACTED]` に置き換える。
+2. 要約で、置換・削除（`replace`・`destroy`）と IAM の変更を確認する。ディストリビューションの置換・削除は、料金プランの解約が先に必要なので、適用せずサイト所有者に確認する（後述）。
+3. `deploy` ジョブ（Environment `infra`）は、必須レビューの承認まで始まらず、AWS の権限も得られない。承認すると、同じコミットで `cdk deploy` する。
+4. 実行ログと要約は誰でも読める。資格情報とハッシュを出力に含めない。
+
+### 公開ロールの権限の確認方法
+
+適用後に、公開ロールで引き受けて、許可していない操作が失敗することを確かめる（`main` の公開ワークフロー、または一時的に OIDC でロールを引き受けるジョブで実行する）。
+
+```bash
+aws s3 cp x s3://<公開先バケット>/probe          # 成功する（許可した配置）
+aws s3 rm s3://<公開先バケット>/probe            # 成功する（許可した削除）
+aws s3api put-bucket-policy ...                  # AccessDenied（バケットの設定は変更できない）
+aws s3 cp x s3://<別環境のバケット>/probe        # AccessDenied（ほかの環境には書けない）
+aws cloudfront update-distribution ...           # AccessDenied（無効化以外はできない）
+aws route53 change-resource-record-sets ...      # AccessDenied
+```
+
+結果は、チケットのコメントに記録する。
 
 ## 料金プランの注意
 
