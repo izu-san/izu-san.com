@@ -1,4 +1,5 @@
 ---
+import '../styles/global.css';
 import { languages, paths, type Lang } from '../lib/i18n.ts';
 
 interface Props {
@@ -34,21 +35,3 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
     <slot />
   </body>
 </html>
-
-<style is:global>
-  :root {
-    color-scheme: dark;
-  }
-  body {
-    margin: 0 auto;
-    max-width: 48rem;
-    padding: 1rem;
-    line-height: 1.7;
-    background: #111;
-    color: #eee;
-    font-family: system-ui, sans-serif;
-  }
-  a {
-    color: #8cf;
-  }
-</style>
