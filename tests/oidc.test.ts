@@ -216,3 +216,14 @@ test('ワークフロー: インフラ適用は手動起動で、deploy は承�
   assert.match(text, /cancel-in-progress:\s*false/);
   assert.match(text, /--require-approval never/);
 });
+
+test('IAM: 説明文は Latin-1 の範囲に収める（日本語だと CloudFormation が拒否する）', () => {
+  for (const t of [deployer(), site()]) {
+    const described = [
+      ...Object.values(t.findResources('AWS::IAM::Role')),
+      ...Object.values(t.findResources('AWS::IAM::ManagedPolicy')),
+    ].filter((r) => r.Properties.Description !== undefined);
+    assert.ok(described.length > 0);
+    for (const r of described) assert.match(r.Properties.Description, /^[\u0009\u000A\u000D -~¡-ÿ]*$/);
+  }
+});
