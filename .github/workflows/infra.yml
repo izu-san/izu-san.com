@@ -1,0 +1,104 @@
+name: infra
+
+# インフラ（CDK）の適用。手動起動のみ。
+# 1. diff: `cdk diff` を表示する（読み取り専用のロール、承認なし）
+# 2. deploy: 承認（GitHub Environment `infra` の必須レビュー）を待ち、承認後に `cdk deploy` する
+# 手順は docs/infra.md。
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 適用は直列にし、進行中の適用を途中でキャンセルしない。
+concurrency:
+  group: infra
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+  AWS_REGION: us-east-1
+
+jobs:
+  diff:
+    # main 以外の参照からは動かさない（Environment 側の許可ブランチでも main に限定する）。
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # 承認なし。信頼条件が environment:infra-diff のロールは、読み取り用の lookup ロールしか引き受けられない。
+    environment: infra-diff
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PREVIEW_AUTH_SHA256: ${{ secrets.PREVIEW_AUTH_SHA256 }}
+    steps:
+      # 外部アクションはコミット SHA で固定する（コメントはタグ）。
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: プレビュー認証のハッシュが設定されていること
+        run: test -n "$PREVIEW_AUTH_SHA256"
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/izu-san-infra-diff
+          aws-region: us-east-1
+      - name: cdk diff
+        run: |
+          set -o pipefail
+          # ログと要約は誰でも読める。Function に入るハッシュは伏せる。
+          pnpm exec cdk diff IzuSanSite --exclusively --no-color 2>&1 \
+            | sed "s/${PREVIEW_AUTH_SHA256}/[REDACTED]/g" | tee diff.txt
+          {
+            echo "## cdk diff（${GITHUB_SHA}）"
+            echo
+            echo '承認する前に、置換・削除（replace / destroy）と IAM の変更を確認する。'
+            echo
+            echo '```'
+            cat diff.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: diff
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # 必須レビューを設定した Environment。承認されるまで、このジョブは始まらず、AWS の権限も得られない。
+    environment: infra
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PREVIEW_AUTH_SHA256: ${{ secrets.PREVIEW_AUTH_SHA256 }}
+    steps:
+      # diff と同じコミットを適用する。
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: プレビュー認証のハッシュが設定されていること
+        run: test -n "$PREVIEW_AUTH_SHA256"
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/izu-san-infra-deploy
+          aws-region: us-east-1
+      - name: cdk deploy
+        run: |
+          set -o pipefail
+          # 承認は Environment で済んでいる。CDK 側の確認は求めない。
+          pnpm exec cdk deploy IzuSanSite --exclusively --require-approval never --no-color 2>&1 \
+            | sed "s/${PREVIEW_AUTH_SHA256}/[REDACTED]/g"
