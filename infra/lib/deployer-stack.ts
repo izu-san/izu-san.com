@@ -82,7 +82,6 @@ export class DeployerStack extends Stack {
           actions: ['s3:*', 'cloudfront:*', 'acm:*', 'wafv2:*'],
           resources: ['*'],
         }),
-        // 料金プランは、有料への変更に使う ApprovePaidSubscription と UpdateSubscription を付けない。
         // テンプレートの BootstrapVersion パラメーター（bootstrap の版）を、CloudFormation が読む。
         new iam.PolicyStatement({
           sid: 'BootstrapVersion',
@@ -91,14 +90,23 @@ export class DeployerStack extends Stack {
             `arn:${this.partition}:ssm:${REGION}:${this.account}:parameter/cdk-bootstrap/${BOOTSTRAP_QUALIFIER}/version`,
           ],
         }),
+        // 料金プランは、サービス単位で許可する（細かい API 名では、依存先の権限が足りず適用が止まりやすい）。
+        // 有料への変更に使う 2 つは、下の明示的な Deny で必ず拒否する。
         new iam.PolicyStatement({
           sid: 'PricingPlan',
-          actions: [
-            'pricingplanmanager:CreateSubscription',
-            'pricingplanmanager:GetSubscription',
-            'pricingplanmanager:ListSubscriptions',
-            'pricingplanmanager:CancelSubscription',
-          ],
+          actions: ['pricingplanmanager:*'],
+          resources: ['*'],
+        }),
+        // プランの作成が、呼び出し元の権限で読む項目（Shield の保護、Free Tier の状態）。読み取りだけ。
+        new iam.PolicyStatement({
+          sid: 'PricingPlanReadDependencies',
+          actions: ['shield:List*', 'shield:Describe*', 'shield:Get*', 'freetier:Get*'],
+          resources: ['*'],
+        }),
+        new iam.PolicyStatement({
+          sid: 'DenyPaidPlans',
+          effect: iam.Effect.DENY,
+          actions: ['pricingplanmanager:ApprovePaidSubscription', 'pricingplanmanager:UpdateSubscription'],
           resources: ['*'],
         }),
         new iam.PolicyStatement({

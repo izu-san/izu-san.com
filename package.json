@@ -18,7 +18,8 @@
     "test": "node --test 'tests/*.test.ts'",
     "cdk": "cdk",
     "synth": "cdk synth",
-    "diff": "cdk diff"
+    "diff": "cdk diff",
+    "deployer:apply": "node infra/scripts/apply-deployer.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
