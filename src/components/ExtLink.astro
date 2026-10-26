@@ -1,0 +1,21 @@
+---
+import { ui, type Lang } from '../lib/i18n.ts';
+
+interface Props {
+  href: string;
+  lang: Lang;
+  class?: string;
+}
+
+const { href, lang, class: className } = Astro.props;
+// https:// の外部サイトだけ新規タブで開く。mailto: とページ内リンクは通常どおり。
+const external = href.startsWith('https://');
+---
+
+{external ? (
+  <a href={href} class={className} target="_blank" rel="noopener noreferrer">
+    <slot /><span class="sr-only">{ui[lang].newTab}</span>
+  </a>
+) : (
+  <a href={href} class={className}><slot /></a>
+)}

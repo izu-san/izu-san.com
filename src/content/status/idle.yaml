@@ -1,0 +1,6 @@
+order: 2
+kind: idle
+updated: "2026-10-26"
+text:
+  ja: （仮データ）ローカル LLM の検証は一時停止しています。
+  en: (Placeholder) Local LLM experiments are paused.

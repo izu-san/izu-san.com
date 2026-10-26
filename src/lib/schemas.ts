@@ -11,14 +11,36 @@ export const bilingual = z.strictObject({ ja: text, en: text });
 const order = z.number().int().positive();
 const yearMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'YYYY-MM 形式で指定してください' });
 
+// 関心領域の「次トークン候補」。word は interests のいずれかと一致させる。確率の合計は 1 以下。
+const tokenCandidate = z.strictObject({ text, p: z.number().gt(0).lte(1) });
+const tokenAnnotation = z.strictObject({ word: text, candidates: z.array(tokenCandidate).min(2) });
+
 // プロフィール: src/content/profile/{ja,en}.md（本文は Markdown）
-export const profileSchema = z.strictObject({
-  name: text,
-  headline: text,
-  pageTitle: text,
-  description: text,
-  interests: z.array(text).min(1),
-});
+export const profileSchema = z
+  .strictObject({
+    name: text,
+    headline: text,
+    pageTitle: text,
+    description: text,
+    interests: z.array(text).min(1),
+    tokens: z.array(tokenAnnotation).optional(),
+  })
+  .superRefine((profile, ctx) => {
+    const words = new Set<string>();
+    profile.tokens?.forEach((token, i) => {
+      if (!profile.interests.includes(token.word)) {
+        ctx.addIssue({ code: 'custom', path: ['tokens', i, 'word'], message: 'interests にない語です' });
+      }
+      if (words.has(token.word)) {
+        ctx.addIssue({ code: 'custom', path: ['tokens', i, 'word'], message: '語が重複しています' });
+      }
+      words.add(token.word);
+      const total = token.candidates.reduce((sum, c) => sum + c.p, 0);
+      if (total > 1 + 1e-9) {
+        ctx.addIssue({ code: 'custom', path: ['tokens', i, 'candidates'], message: '確率の合計が 1 を超えています' });
+      }
+    });
+  });
 
 // 作品: src/content/works/<作品ID>.yaml。日英を 1 ファイルに持たせ、作品 ID の食い違いを構造上起こさない。
 const workCopy = z.strictObject({
@@ -68,6 +90,14 @@ export const linkSchema = z.strictObject({
   label: text,
   kind: z.enum(['github', 'sns', 'email']),
   url: z.string().regex(/^(https:\/\/|mailto:)\S+$/, { error: 'https:// または mailto: で始めてください' }),
+});
+
+// 稼働状況: src/content/status/<ID>.yaml。更新日（YYYY-MM-DD）の最新を「最終更新」として表示する。
+export const statusSchema = z.strictObject({
+  order,
+  kind: z.enum(['running', 'idle', 'next']),
+  text: bilingual,
+  updated: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, { error: 'YYYY-MM-DD 形式で指定してください' }),
 });
 
 /** order の重複を返す。表示順が決まらないためビルドエラーにする。 */

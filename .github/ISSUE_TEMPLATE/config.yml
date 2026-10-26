@@ -1,0 +1,6 @@
+# 作業管理は YouTrack で行う。この Issue は、外部からの不具合報告・要望の受け皿。
+blank_issues_enabled: false
+contact_links:
+  - name: 脆弱性の報告 / Report a vulnerability
+    url: https://github.com/izu-san/izu-san.com/security/advisories/new
+    about: 脆弱性は公開の Issue に書かず、こちらから非公開で報告してください。 / Please report vulnerabilities privately here, not in a public issue.

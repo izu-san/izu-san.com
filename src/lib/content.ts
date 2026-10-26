@@ -25,11 +25,16 @@ export async function loadSiteContent(lang: Lang) {
   const skills = sorted('skills', await getCollection('skills'));
   const career = sorted('career', await getCollection('career'));
   const links = sorted('links', await getCollection('links'));
+  const status = sorted('status', await getCollection('status'));
   return {
     profile: await loadProfile(lang),
     works: works.map(({ id, data }) => ({ id, ...data, copy: data[lang] })),
     skills: skills.map(({ id, data }) => ({ id, label: data.label[lang], items: data.items.map((i) => ({ name: i.name, usage: i.usage[lang] })) })),
     career: career.map(({ id, data }) => ({ id, start: data.start, end: data.end, field: data.field[lang], description: data.description[lang] })),
+    status: {
+      items: status.map(({ id, data }) => ({ id, kind: data.kind, text: data.text[lang] })),
+      updated: status.map(({ data }) => data.updated).toSorted().at(-1) ?? '',
+    },
     links: links.map(({ id, data }) => ({ id, ...data })),
   };
 }
