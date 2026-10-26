@@ -54,10 +54,18 @@ GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認
 
 ### 初期設定（サイト所有者が 1 回だけ。AWS・GitHub の変更なので、実行前に確認する）
 
-1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
+1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。bootstrap より先に適用するため、`cdk deploy` は使えない（CDK が bootstrap を前提にする）。`cdk synth` したテンプレートを、CloudFormation で直接適用する。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
    ```bash
-   pnpm exec cdk diff IzuSanDeployer
-   pnpm exec cdk deploy IzuSanDeployer --exclusively
+   pnpm exec cdk synth IzuSanDeployer --exclusively -q
+   # 変更セットを作って内容を確認する（実行はしない）
+   aws cloudformation deploy --region us-east-1 --stack-name IzuSanDeployer \
+     --template-file cdk.out/IzuSanDeployer.template.json \
+     --capabilities CAPABILITY_NAMED_IAM --no-execute-changeset
+   aws cloudformation describe-change-set --region us-east-1 --stack-name IzuSanDeployer \
+     --change-set-name <deploy の出力に出る変更セット名>
+   # 問題なければ実行する
+   aws cloudformation execute-change-set --region us-east-1 --stack-name IzuSanDeployer \
+     --change-set-name <同じ変更セット名>
    ```
 2. 作った実行ポリシーを使って bootstrap する。
    ```bash

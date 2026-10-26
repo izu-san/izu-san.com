@@ -28,7 +28,8 @@ export class DeployerStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
     super(scope, id, {
       ...props,
-      // bootstrap より先に適用するため、bootstrap の版チェックは付けない。
+      // bootstrap より先に適用するため、テンプレートに bootstrap の版チェックを付けない。
+      // cdk deploy は bootstrap を前提にするので、`cdk synth` したテンプレートを CloudFormation で直接適用する（docs/infra.md）。
       synthesizer: new DefaultStackSynthesizer({ generateBootstrapVersionRule: false }),
     });
 

@@ -227,3 +227,9 @@ test('IAM: 説明文は Latin-1 の範囲に収める（日本語だと CloudFor
     for (const r of described) assert.match(r.Properties.Description, /^[\u0009\u000A\u000D -~¡-ÿ]*$/);
   }
 });
+
+test('IzuSanDeployer: bootstrap より先に適用できるよう、bootstrap の版チェックを含まない', () => {
+  const template = deployer().toJSON();
+  assert.equal(template.Parameters?.BootstrapVersion, undefined);
+  assert.equal(template.Rules?.CheckBootstrapVersion, undefined);
+});
