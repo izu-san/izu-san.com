@@ -35,11 +35,20 @@ const { Content } = profile;
   <main id="main">
     <section id="profile" class="hero" aria-labelledby="profile-h">
       <div class="wrap">
-        <h1 id="profile-h">{profile.data.name}</h1>
-        <p class="headline">{profile.data.headline}</p>
-        <ul class="tags">{profile.data.interests.map((i) => <li>{i}</li>)}</ul>
-        <div class="prose" style="margin-top: 1.5rem">
-          <Content />
+        <div class="titleblock">
+          <p class="tb-label" aria-hidden="true"><span>DWG-001</span><span>REV A</span></p>
+          <div class="tb-body">
+            <div class="name-dim">
+              <h1 id="profile-h">{profile.data.name}</h1>
+              <div class="dim" aria-hidden="true"><span>1:1</span></div>
+            </div>
+            <p class="headline">{profile.data.headline}</p>
+            <ol class="notes">{profile.data.interests.map((i) => <li>{i}</li>)}</ol>
+            <div class="prose">
+              <Content />
+            </div>
+          </div>
+          <p class="tb-label" aria-hidden="true"><span>SCALE 1:1</span><span>SHEET 1/1</span></p>
         </div>
       </div>
     </section>
