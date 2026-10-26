@@ -56,26 +56,16 @@ const { Content } = profile;
     <section id="works" class="section" aria-labelledby="works-h">
       <div class="wrap">
         <h2 id="works-h" class="section-title">{t.nav.works}</h2>
-        <table class="bom">
-          <thead>
-            <tr>
-              <th scope="col">{t.bom.no}</th>
-              <th scope="col">{t.bom.name}</th>
-              <th scope="col">{t.bom.summary}</th>
-              <th scope="col">{t.tech}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {works.map((w, i) => (
-              <tr>
-                <td class="bom-no">{String(i + 1).padStart(2, '0')}</td>
-                <th scope="row" class="bom-name"><a href={w.url}>{w.copy.name}</a></th>
-                <td>{w.copy.summary}</td>
-                <td class="bom-tech" data-label={t.tech}>{w.tech.join(' / ')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ul class="panels">
+          {works.map((w, i) => (
+            <li class="panel">
+              <p class="panel-no" aria-hidden="true">PART {String(i + 1).padStart(2, '0')}</p>
+              <h3 class="panel-title"><a class="panel-link" href={w.url}>{w.copy.name}</a></h3>
+              <p class="panel-body">{w.copy.summary}</p>
+              <p class="meta">{t.tech}: {w.tech.join(' / ')}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
 
@@ -113,7 +103,14 @@ const { Content } = profile;
     <section id="contact" class="section" aria-labelledby="contact-h">
       <div class="wrap">
         <h2 id="contact-h" class="section-title">{t.nav.contact}</h2>
-        <ul class="links">{links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}</ul>
+        <ul class="panels panels-links">
+          {links.map((l) => (
+            <li class="panel">
+              <h3 class="panel-title"><a class="panel-link" href={l.url}>{l.label}</a></h3>
+              <p class="meta">{l.url.replace(/^(mailto:|https?:\/\/)/, '')}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   </main>

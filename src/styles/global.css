@@ -183,9 +183,9 @@ main {
   counter-increment: section;
 }
 
-@media (min-width: 52rem) {
+@media (min-width: 64rem) {
   .section > .wrap {
-    grid-template-columns: 11rem minmax(0, 1fr);
+    grid-template-columns: 14rem minmax(0, 1fr);
   }
 }
 
@@ -366,105 +366,63 @@ main {
   color: var(--muted);
 }
 
-/* 個人開発: 部品表（BOM）。狭い画面では行を縦に積む */
-.bom {
-  width: 100%;
-  border-collapse: collapse;
+/* パネル: 角丸なしの枠。全体をリンクにする（個人開発・外部リンク） */
+.panels {
+  display: grid;
+  gap: 1rem;
 }
 
-.bom thead {
+@media (min-width: 40rem) {
+  .panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.panels-links {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.panel {
+  position: relative;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--rule);
+}
+
+.panel:hover,
+.panel:focus-within {
+  border-color: var(--accent);
+}
+
+.panel:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* リンクの当たり判定をパネル全体に広げる */
+.panel-link::after {
+  content: '';
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+  inset: 0;
 }
 
-.bom tr {
-  display: block;
-  padding-block: 1.25rem;
-  border-top: 1px solid var(--rule);
+.panel-link:focus-visible {
+  outline: none;
 }
 
-.bom tbody tr:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.bom td,
-.bom th {
-  display: block;
-  padding: 0;
-  text-align: left;
-  font-weight: 400;
-}
-
-.bom-no {
+.panel-no {
+  margin-bottom: 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   color: var(--accent);
 }
 
-.bom .bom-name {
+.panel-title {
   font-size: 1.125rem;
 }
 
-.bom td:nth-child(3) {
+.panel-body {
   margin-top: 0.5rem;
-  max-width: 40rem;
-}
-
-.bom-tech {
-  margin-top: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-.bom-tech::before {
-  content: attr(data-label) ': ';
-}
-
-@media (min-width: 52rem) {
-  .bom thead {
-    position: static;
-    width: auto;
-    height: auto;
-    clip-path: none;
-  }
-
-  .bom tr {
-    display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-    gap: 0 1.5rem;
-    padding-block: 1rem;
-  }
-
-  .bom thead tr {
-    padding-block: 0 0.5rem;
-    border-top: 0;
-    border-bottom: 1px solid var(--accent);
-  }
-
-  .bom thead th {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-  }
-
-  .bom tbody tr:first-child {
-    padding-top: 1rem;
-  }
-
-  .bom td:nth-child(3),
-  .bom-tech {
-    margin-top: 0;
-  }
-
-  .bom-tech::before {
-    content: none;
-  }
 }
 
 /* スキル */
@@ -495,11 +453,6 @@ main {
   .skill-list dd {
     margin: 0;
   }
-}
-
-/* 連絡 */
-.links li + li {
-  margin-top: 0.5rem;
 }
 
 /* フッター */
