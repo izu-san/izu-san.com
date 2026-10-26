@@ -8,6 +8,8 @@ import { SiteEnvironment } from './site-environment.ts';
 export interface SiteStackProps extends StackProps {
   /** 本番の A/AAAA Alias を作るか（既定 false。ZJS-14 で有効化する）。 */
   readonly enableProductionAlias?: boolean;
+  /** プレビューの「user:pass」の SHA-256。未指定なら、プレビューは全リクエストを拒否する。 */
+  readonly previewAuthSha256?: string;
 }
 
 /** us-east-1 の 1 スタックに、本番・プレビュー・成果物保管をまとめる。 */
@@ -30,12 +32,15 @@ export class SiteStack extends Stack {
       domainName: ENVIRONMENTS.production.domainName,
       zone,
       createAlias: props.enableProductionAlias ?? false,
+      authRequired: false,
     });
     this.preview = new SiteEnvironment(this, 'Preview', {
       name: 'preview',
       domainName: ENVIRONMENTS.preview.domainName,
       zone,
       createAlias: true,
+      authRequired: true,
+      authSha256: props.previewAuthSha256,
     });
 
     // 成功した公開成果物の保管先（releases/<コミットID>/）。

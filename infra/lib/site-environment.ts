@@ -9,6 +9,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 import { Construct } from 'constructs';
 import { COST_TAG_KEY, COST_TAG_VALUE, type EnvironmentName } from './config.ts';
+import { viewerRequestCode } from './viewer-request.ts';
 
 export interface SiteEnvironmentProps {
   readonly name: EnvironmentName;
@@ -16,14 +17,11 @@ export interface SiteEnvironmentProps {
   readonly zone: route53.IHostedZone;
   /** A/AAAA Alias を作るか。本番は ZJS-14 まで false。 */
   readonly createAlias: boolean;
+  /** Basic 認証を求めるか（プレビューのみ）。 */
+  readonly authRequired: boolean;
+  /** 「user:pass」の SHA-256。authRequired で未指定なら、全リクエストを拒否する。 */
+  readonly authSha256?: string;
 }
-
-// viewer-request の仮の Function。認証と URL 書き換えは ZJS-7 で実装する。
-// 本番とプレビューで Function を共有しないため、環境ごとに作る。
-const PLACEHOLDER_FUNCTION_CODE = `function handler(event) {
-  return event.request;
-}
-`;
 
 /** 1 環境分（S3・CloudFront・ACM・WAF・料金プラン・Alias）。 */
 export class SiteEnvironment extends Construct {
@@ -61,9 +59,12 @@ export class SiteEnvironment extends Construct {
       },
     });
 
+    // 認証（プレビューのみ）と URL 書き換えを 1 つの Function にまとめる。環境ごとに作り、共有しない。
     const viewerRequest = new cloudfront.Function(this, 'ViewerRequest', {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
-      code: cloudfront.FunctionCode.fromInline(PLACEHOLDER_FUNCTION_CODE),
+      code: cloudfront.FunctionCode.fromInline(
+        viewerRequestCode({ authRequired: props.authRequired, authSha256: props.authSha256 }),
+      ),
     });
 
     this.distribution = new cloudfront.Distribution(this, 'Distribution', {
