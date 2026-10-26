@@ -1,0 +1,42 @@
+# 更新 PR は preview に向ける（main へは preview からの PR だけ）。
+# 依存は完全一致で固定している（仕様書 §4.1）。更新後に pnpm check と pnpm build が通ることを PR の verify で確認する。
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: preview
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # マイナー・パッチ更新はまとめる。メジャー更新は個別の PR にする。
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # @astrojs/check の peer が TypeScript 5〜6 のため、7 系へは上げない（§4.1）。
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Node.js 24 系に合わせる（§4.1）。
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: preview
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"
+    # アクションはコミット SHA で固定し、コメントにタグを残している。更新時はタグと SHA を同時に更新する（§9.2.1）。
+    groups:
+      github-actions:
+        patterns: ["*"]

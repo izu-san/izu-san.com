@@ -1,0 +1,49 @@
+name: 不具合の報告 / Bug report
+description: 表示の崩れ、リンク切れ、操作できない箇所などを報告する。 / Report a layout problem, broken link or something that does not work.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        日本語・英語どちらでも書けます。脆弱性は、公開の Issue ではなく [非公開の報告](https://github.com/izu-san/izu-san.com/security/advisories/new) からお願いします。
+        Japanese or English is fine. For vulnerabilities, please use the [private report form](https://github.com/izu-san/izu-san.com/security/advisories/new) instead of a public issue.
+  - type: input
+    id: page
+    attributes:
+      label: 発生したページ / Page
+      description: URL、または日本語版 / 英語版のどちらか。 / A URL, or whether it is the Japanese or English page.
+      placeholder: https://izu-san.com/en/
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 起きたこと / What happened
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順 / Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動き / Expected behavior
+  - type: input
+    id: environment
+    attributes:
+      label: 環境 / Environment
+      description: ブラウザー、OS、端末、画面の幅など。 / Browser, OS, device, viewport width, etc.
+      placeholder: Firefox 130 / Android 15 / 320px
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 確認 / Checks
+      options:
+        - label: パスワードや個人情報を書いていません。 / I have not included passwords or personal information.
+          required: true
