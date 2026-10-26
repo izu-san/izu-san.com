@@ -1,0 +1,26 @@
+name: 改善の要望 / Feature request
+description: 表示や使い勝手の改善を提案する。 / Suggest an improvement to the site.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        個人のポートフォリオサイトなので、ブログ・問い合わせフォーム・会員登録・ライトテーマなどは対象外です（仕様書 §3）。
+        This is a personal portfolio site; blogging, contact forms, sign-up and a light theme are out of scope.
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案内容 / Proposal
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 理由・困っていること / Why it helps
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足 / Notes
+      description: 参考になるページや画像があれば。 / Links or screenshots, if any.
