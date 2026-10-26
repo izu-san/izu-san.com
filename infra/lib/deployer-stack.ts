@@ -97,10 +97,12 @@ export class DeployerStack extends Stack {
           actions: ['pricingplanmanager:*'],
           resources: ['*'],
         }),
-        // プランの作成が、呼び出し元の権限で読む項目（Shield の保護、Free Tier の状態）。読み取りだけ。
+        // プランの作成が、呼び出し元の権限で読む項目（Shield の保護、Free Tier の状態、過去の利用状況の指標）。読み取りだけ。
+        // 指標は、拒否時の応答「Unable to verify historical usage because the caller lacks permission to read CloudWatch
+        // metrics (cloudwatch:GetMetricData)」で分かった。AWS 管理ポリシー PricingPlanManagerFullAccess の依存先と同じ。
         new iam.PolicyStatement({
           sid: 'PricingPlanReadDependencies',
-          actions: ['shield:List*', 'shield:Describe*', 'shield:Get*', 'freetier:Get*'],
+          actions: ['shield:List*', 'shield:Describe*', 'shield:Get*', 'freetier:Get*', 'cloudwatch:GetMetricData'],
           resources: ['*'],
         }),
         new iam.PolicyStatement({
