@@ -181,6 +181,9 @@ test('実行ポリシー: Route 53 の変更は条件キーで絞り、料金プ
   assert.ok(!actions.some((a) => /ApprovePaidSubscription|UpdateSubscription/.test(a)));
   assert.ok(!actions.includes('route53:*') && !actions.includes('iam:*') && !actions.includes('*'));
   assert.ok(actions.includes('pricingplanmanager:CancelSubscription'));
+  // プランの作成が読む依存先（Shield・Free Tier）は読み取りだけ。
+  assert.ok(actions.includes('shield:ListProtections') && actions.includes('freetier:GetAccountPlanState'));
+  assert.ok(!actions.some((a) => /^shield:(Create|Update|Delete|Associate|Disassociate)/.test(a)));
   // bootstrap の版を読む権限は、そのパラメーター 1 つだけ。
   const ssm = statements.find((s) => s.Sid === 'BootstrapVersion')!;
   assert.equal(ssm.Action, 'ssm:GetParameters');
