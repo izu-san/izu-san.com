@@ -23,7 +23,17 @@
 
 ## 確認コマンド
 
-Astro の導入後に追記する（型・コンテンツ・日英の必須項目の検証、ビルド）。
+Node.js は `.nvmrc`、pnpm は `package.json` の `packageManager` で固定している。
+
+```bash
+pnpm install --frozen-lockfile  # 依存関係の取得（ロックファイルどおり）
+pnpm check                      # 型チェック（astro check）
+pnpm build                      # 静的ファイルを dist/ に生成
+pnpm verify                     # check と build をまとめて実行（CI と同じ検証）
+pnpm dev / pnpm preview         # 開発サーバー / ビルド結果の確認
+```
+
+コンテンツと日英の必須項目の検証は、Content Collections の導入後に `pnpm check` へ含める。
 
 ## 守ること
 
