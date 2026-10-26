@@ -1,0 +1,157 @@
+---
+import { ui, type Lang } from '../lib/i18n.ts';
+
+interface Props {
+  lang: Lang;
+  links: { id: string; label: string; url: string }[];
+}
+
+const { lang, links } = Astro.props;
+const f = ui[lang].factory;
+---
+
+<details class="factory">
+  <summary>{f.summary}</summary>
+  <div class="factory-body" data-factory data-strings={JSON.stringify(f)}>
+    <p>{f.intro}</p>
+    <noscript><p>{f.noscript}</p></noscript>
+    <div class="factory-board" role="group" aria-label={f.boardLabel}></div>
+    <p class="factory-actions">
+      <button type="button" data-run>{f.run}</button>
+      <button type="button" data-reset>{f.reset}</button>
+    </p>
+    <p class="factory-status" role="status" aria-live="polite"></p>
+    <div class="factory-reward" hidden>
+      <p>{f.clear}</p>
+      <ul>
+        {links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}
+      </ul>
+    </div>
+  </div>
+</details>
+
+<script>
+  import { DELTAS, LAYOUT, SIZE, emptyBelts, simulate } from '../lib/factory.ts';
+
+  const root = document.querySelector<HTMLElement>('[data-factory]');
+  if (root) {
+    const s = JSON.parse(root.dataset.strings!);
+    const board = root.querySelector<HTMLElement>('.factory-board')!;
+    const status = root.querySelector<HTMLElement>('.factory-status')!;
+    const reward = root.querySelector<HTMLElement>('.factory-reward')!;
+    const runButton = root.querySelector<HTMLButtonElement>('[data-run]')!;
+    const glyphs = ['', '→', '↓', '←', '↑'];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const belts = emptyBelts();
+    const cells: (HTMLElement | null)[][] = [];
+    let timer = 0;
+
+    const label = (r: number, c: number) =>
+      s.cell.replace('{r}', String(r + 1)).replace('{c}', String(c + 1)).replace('{d}', s.dirs[belts[r][c]]);
+
+    const clearMarks = () => {
+      clearTimeout(timer);
+      runButton.disabled = false;
+      for (const row of cells) for (const el of row) el?.removeAttribute('data-mark');
+      status.textContent = '';
+      reward.hidden = true;
+    };
+
+    const first = { r: -1, c: -1 };
+    for (let r = 0; r < SIZE; r++) {
+      cells.push([]);
+      for (let c = 0; c < SIZE; c++) {
+        const kind = LAYOUT[r][c];
+        let el: HTMLElement;
+        if (kind === '.') {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'factory-cell';
+          button.dataset.r = String(r);
+          button.dataset.c = String(c);
+          button.tabIndex = first.r < 0 ? 0 : -1;
+          if (first.r < 0) Object.assign(first, { r, c });
+          button.setAttribute('aria-label', label(r, c));
+          button.addEventListener('click', () => {
+            belts[r][c] = (belts[r][c] + 1) % DELTAS.length;
+            button.textContent = glyphs[belts[r][c]];
+            button.setAttribute('aria-label', label(r, c));
+            clearMarks();
+          });
+          el = button;
+        } else {
+          el = document.createElement('div');
+          el.className = `factory-cell factory-${kind === '#' ? 'wall' : kind === 'S' ? 'source' : 'goal'}`;
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', kind === '#' ? s.wall : kind === 'S' ? s.source : s.goal);
+          if (kind !== '#') el.textContent = kind === 'S' ? 'IN' : 'OUT';
+        }
+        cells[r].push(el);
+        board.append(el);
+      }
+    }
+
+    // 矢印キーでマス間を移動する（フォーカスが当たるのは 1 マスだけ）。
+    board.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.dataset.r) return;
+      const dir = { ArrowRight: [0, 1], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowUp: [-1, 0] }[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      let r = Number(target.dataset.r) + dir[0];
+      let c = Number(target.dataset.c) + dir[1];
+      while (r >= 0 && r < SIZE && c >= 0 && c < SIZE) {
+        const next = cells[r][c];
+        if (next instanceof HTMLButtonElement) {
+          target.tabIndex = -1;
+          next.tabIndex = 0;
+          next.focus();
+          return;
+        }
+        r += dir[0];
+        c += dir[1];
+      }
+    });
+
+    runButton.addEventListener('click', () => {
+      clearMarks();
+      const { path, result } = simulate(belts);
+      const finish = () => {
+        status.textContent = s.results[result];
+        reward.hidden = result !== 'goal';
+        runButton.disabled = false;
+      };
+      if (reduced) {
+        for (const [r, c] of path) cells[r][c]?.setAttribute('data-mark', 'path');
+        finish();
+        return;
+      }
+      runButton.disabled = true;
+      let i = 0;
+      const step = () => {
+        if (i > 0) cells[path[i - 1][0]][path[i - 1][1]]?.setAttribute('data-mark', 'path');
+        if (i >= path.length) return finish();
+        cells[path[i][0]][path[i][1]]?.setAttribute('data-mark', 'item');
+        i += 1;
+        timer = window.setTimeout(step, 220);
+      };
+      step();
+    });
+
+    root.querySelector('[data-reset]')!.addEventListener('click', () => {
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          belts[r][c] = 0;
+          const el = cells[r][c];
+          if (el instanceof HTMLButtonElement) {
+            el.textContent = '';
+            el.setAttribute('aria-label', label(r, c));
+          }
+        }
+      }
+      clearMarks();
+    });
+
+    root.classList.add('ready');
+  }
+</script>
