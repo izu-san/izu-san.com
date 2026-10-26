@@ -17,7 +17,7 @@ interface Ui {
   tech: string;
   status: { title: string; updated: string; kinds: Record<'running' | 'idle' | 'next', string> };
   token: { label: string };
-  approval: { designed: string; checked: string; approved: string; you: string; open: string };
+  approval: { designed: string; checked: string; approved: string; you: string; open: string; invite: string };
   present: string;
   footer: string;
 }
@@ -33,7 +33,7 @@ export const ui: Record<Lang, Ui> = {
     tech: '使用技術',
     status: { title: '稼働状況', updated: '最終更新', kinds: { running: '稼働中', idle: '待機中', next: '次' } },
     token: { label: '次トークン候補' },
-    approval: { designed: '設計', checked: '審査', approved: '承認', you: 'あなた', open: 'ご連絡で完了します' },
+    approval: { designed: '設計', checked: '審査', approved: '承認', you: 'あなた', open: '未承認', invite: 'お気軽にご連絡ください' },
     present: '現在',
     footer: '© 2026 Izu-san',
   },
@@ -46,7 +46,7 @@ export const ui: Record<Lang, Ui> = {
     tech: 'Tech',
     status: { title: 'Status', updated: 'Last updated', kinds: { running: 'NOW RUNNING', idle: 'IDLE', next: 'NEXT' } },
     token: { label: 'Next token' },
-    approval: { designed: 'Designed by', checked: 'Checked by', approved: 'Approved by', you: 'You', open: 'Awaiting your message' },
+    approval: { designed: 'Designed by', checked: 'Checked by', approved: 'Approved by', you: 'You', open: 'Pending', invite: 'Feel free to get in touch' },
     present: 'present',
     footer: '© 2026 Izu-san',
   },

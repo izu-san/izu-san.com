@@ -151,6 +151,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
             <div><dt>{t.approval.checked}</dt><dd>{t.approval.you}</dd></div>
             <div class="approval-open"><dt>{t.approval.approved}</dt><dd>{t.approval.open}</dd></div>
           </dl>
+          <p class="approval-note">{t.approval.invite}</p>
           <ul class="panels panels-links">
             {links.map((l, i) => (
               <li class="panel reveal" style={`--i: ${i}`}>
