@@ -17,6 +17,7 @@ interface Ui {
   tech: string;
   status: { title: string; updated: string; kinds: Record<'running' | 'idle' | 'next', string> };
   token: { label: string };
+  newTab: string;
   factory: {
     summary: string;
     intro: string;
@@ -48,6 +49,7 @@ export const ui: Record<Lang, Ui> = {
     tech: '使用技術',
     status: { title: '稼働状況', updated: '最終更新', kinds: { running: '稼働中', idle: '待機中', next: '次' } },
     token: { label: '次トークン候補' },
+    newTab: '（新しいタブで開きます）',
     factory: {
       summary: 'ミニ工場（遊べます）',
       intro: '入口（IN）から出口（OUT）まで素材を運んでください。マスを押すたびにベルトの向きが変わります（→ ↓ ← ↑ → なし）。',
@@ -82,6 +84,7 @@ export const ui: Record<Lang, Ui> = {
     tech: 'Tech',
     status: { title: 'Status', updated: 'Last updated', kinds: { running: 'NOW RUNNING', idle: 'IDLE', next: 'NEXT' } },
     token: { label: 'Next token' },
+    newTab: '(opens in a new tab)',
     factory: {
       summary: 'Mini factory (playable)',
       intro: 'Carry the material from the entrance (IN) to the exit (OUT). Each press on a cell turns its belt (→ ↓ ← ↑ → none).',

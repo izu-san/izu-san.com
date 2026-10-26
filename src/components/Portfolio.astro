@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ExtLink from './ExtLink.astro';
 import FactoryPuzzle from './FactoryPuzzle.astro';
 import { loadSiteContent } from '../lib/content.ts';
 import { otherLang, paths, sectionIds, ui, type Lang } from '../lib/i18n.ts';
@@ -96,7 +97,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
         <ul class="panels">
           {works.map((w, i) => (
             <li class="panel reveal" style={`--i: ${i}`}>
-              <h3 class="panel-title"><a class="panel-link" href={w.url}>{w.copy.name}</a></h3>
+              <h3 class="panel-title"><ExtLink class="panel-link" href={w.url} lang={lang}>{w.copy.name}</ExtLink></h3>
               <p class="panel-body">{w.copy.summary}</p>
               <div class="recipe">
                 <p class="sr-only">{t.tech}:</p>
@@ -156,7 +157,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
           <ul class="panels panels-links">
             {links.map((l, i) => (
               <li class="panel reveal" style={`--i: ${i}`}>
-                <h3 class="panel-title"><a class="panel-link" href={l.url}>{l.label}</a></h3>
+                <h3 class="panel-title"><ExtLink class="panel-link" href={l.url} lang={lang}>{l.label}</ExtLink></h3>
                 <p class="meta">{l.url.replace(/^(mailto:|https?:\/\/)/, '')}</p>
               </li>
             ))}

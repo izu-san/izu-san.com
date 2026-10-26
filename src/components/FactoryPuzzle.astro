@@ -1,5 +1,6 @@
 ---
 import { ui, type Lang } from '../lib/i18n.ts';
+import ExtLink from './ExtLink.astro';
 
 interface Props {
   lang: Lang;
@@ -24,7 +25,7 @@ const f = ui[lang].factory;
     <div class="factory-reward" hidden>
       <p>{f.clear}</p>
       <ul>
-        {links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}
+        {links.map((l) => <li><ExtLink href={l.url} lang={lang}>{l.label}</ExtLink></li>)}
       </ul>
     </div>
   </div>
