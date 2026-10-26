@@ -177,13 +177,18 @@ test('実行ポリシー: Route 53 の変更は条件キーで絞り、料金プ
       'route53:ChangeResourceRecordSetsRecordTypes': ['A', 'AAAA', 'CNAME'],
     },
   });
-  const actions = statements.flatMap((s) => ([] as string[]).concat(s.Action));
+  const allowed = statements.filter((s) => s.Effect === 'Allow');
+  const actions = allowed.flatMap((s) => ([] as string[]).concat(s.Action));
+  // 有料化に使う 2 つは、許可の文に含めず、明示的な Deny で拒否する。
   assert.ok(!actions.some((a) => /ApprovePaidSubscription|UpdateSubscription/.test(a)));
+  const deny = statements.find((s) => s.Sid === 'DenyPaidPlans')!;
+  assert.equal(deny.Effect, 'Deny');
+  assert.deepEqual(deny.Action, ['pricingplanmanager:ApprovePaidSubscription', 'pricingplanmanager:UpdateSubscription']);
   assert.ok(!actions.includes('route53:*') && !actions.includes('iam:*') && !actions.includes('*'));
-  assert.ok(actions.includes('pricingplanmanager:CancelSubscription'));
+  assert.ok(actions.includes('pricingplanmanager:*'));
   // プランの作成が読む依存先（Shield・Free Tier）は読み取りだけ。
-  assert.ok(actions.includes('shield:ListProtections') && actions.includes('freetier:GetAccountPlanState'));
-  assert.ok(!actions.some((a) => /^shield:(Create|Update|Delete|Associate|Disassociate)/.test(a)));
+  assert.ok(actions.includes('shield:List*') && actions.includes('freetier:Get*'));
+  assert.ok(!actions.some((a) => /^shield:(\*|Create|Update|Delete|Associate|Disassociate)/.test(a)));
   // bootstrap の版を読む権限は、そのパラメーター 1 つだけ。
   const ssm = statements.find((s) => s.Sid === 'BootstrapVersion')!;
   assert.equal(ssm.Action, 'ssm:GetParameters');
