@@ -5,7 +5,7 @@
 Personal portfolio site of Izu-san: profile, interests (AI-driven development, local LLMs, factory-automation games) and personal projects, published in Japanese and English with identical content.
 
 - 本番 / Production: https://izu-san.com
-- プレビュー / Preview: https://preview.izu-san.com（Basic 認証あり / Basic auth required）
+- プレビュー / Preview: <https://preview.izu-san.com> （Basic 認証あり / Basic auth required）
 
 ## 技術構成 / Stack
 
