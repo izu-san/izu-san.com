@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadSiteContent } from '../lib/content.ts';
+import { otherLang, paths, sectionIds, ui, type Lang } from '../lib/i18n.ts';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const other = otherLang(lang);
+const { profile, works, skills, career, links } = await loadSiteContent(lang);
+const { Content } = profile;
+---
+
+<Base lang={lang} title={profile.data.pageTitle} description={profile.data.description}>
+  <header>
+    <p>{profile.data.name}</p>
+    <nav aria-label="sections">
+      <ul>
+        {sectionIds.map((id) => <li><a href={`#${id}`}>{t.nav[id]}</a></li>)}
+      </ul>
+    </nav>
+    <p>
+      {t.switchLabel}:
+      <a id="lang-switch" href={paths[other]} hreflang={other} lang={other}>{ui[lang].switchText}</a>
+    </p>
+  </header>
+
+  <main>
+    <section id="profile" aria-labelledby="profile-h">
+      <h1 id="profile-h">{profile.data.name}</h1>
+      <p>{profile.data.headline}</p>
+      <ul>{profile.data.interests.map((i) => <li>{i}</li>)}</ul>
+      <Content />
+    </section>
+
+    <section id="works" aria-labelledby="works-h">
+      <h2 id="works-h">{t.nav.works}</h2>
+      {works.map((w) => (
+        <article>
+          <h3><a href={w.url}>{w.copy.name}</a></h3>
+          <p>{w.copy.summary}</p>
+          <p>{t.tech}: {w.tech.join(', ')}</p>
+        </article>
+      ))}
+    </section>
+
+    <section id="skills" aria-labelledby="skills-h">
+      <h2 id="skills-h">{t.nav.skills}</h2>
+      {skills.map((s) => (
+        <div>
+          <h3>{s.label}</h3>
+          <dl>
+            {s.items.map((i) => <><dt>{i.name}</dt><dd>{i.usage}</dd></>)}
+          </dl>
+        </div>
+      ))}
+    </section>
+
+    <section id="career" aria-labelledby="career-h">
+      <h2 id="career-h">{t.nav.career}</h2>
+      {career.map((c) => (
+        <article>
+          <h3>{c.field}</h3>
+          <p><time>{c.start}</time> – {c.end ? <time>{c.end}</time> : t.present}</p>
+          <p>{c.description}</p>
+        </article>
+      ))}
+    </section>
+
+    <section id="contact" aria-labelledby="contact-h">
+      <h2 id="contact-h">{t.nav.contact}</h2>
+      <ul>{links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}</ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>{t.footer}</p>
+  </footer>
+
+  <script>
+    // JavaScript が使えるときだけ、切り替えリンクに現在のセクション（#...）を引き継ぐ。
+    const link = document.querySelector<HTMLAnchorElement>('#lang-switch');
+    if (link) {
+      const base = link.getAttribute('href')!;
+      const sync = () => link.setAttribute('href', base + location.hash);
+      addEventListener('hashchange', sync);
+      sync();
+    }
+  </script>
+</Base>

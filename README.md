@@ -27,7 +27,8 @@ Node.js 24.22.1（`.nvmrc`）と pnpm 12.15.0（`package.json` の `packageManag
 ```bash
 pnpm install --frozen-lockfile  # 依存関係の取得 / install dependencies
 pnpm dev                        # 開発サーバー / dev server
-pnpm check                      # 型チェック / type check
+pnpm check                      # 型チェック・コンテンツ検証 / type and content check
+pnpm test                       # スキーマ検証のテスト / schema tests
 pnpm build                      # 静的ファイルを dist/ に生成 / build to dist/
 pnpm preview                    # ビルド結果の確認 / preview the build
 ```

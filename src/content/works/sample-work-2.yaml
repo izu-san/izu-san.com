@@ -1,0 +1,11 @@
+order: 2
+tech:
+  - TypeScript
+  - Astro
+url: https://example.com/sample-work-2
+ja:
+  name: Sample Work 2
+  summary: （仮データ）作品 2 の概要です。
+en:
+  name: Sample Work 2
+  summary: (Placeholder) Summary of work 2.

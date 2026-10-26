@@ -1,0 +1,9 @@
+order: 2
+label:
+  ja: Web 開発
+  en: Web development
+items:
+  - name: TypeScript
+    usage:
+      ja: （仮データ）個人開発で利用しています。
+      en: (Placeholder) Used in personal projects.

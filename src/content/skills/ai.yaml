@@ -1,0 +1,9 @@
+order: 1
+label:
+  ja: AI・LLM
+  en: AI and LLMs
+items:
+  - name: Claude Code
+    usage:
+      ja: （仮データ）日常の開発で利用しています。
+      en: (Placeholder) Used in day-to-day development.
