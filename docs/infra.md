@@ -56,17 +56,10 @@ GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認
 
 1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。bootstrap より先に適用するため、`cdk deploy` は使えない（CDK が bootstrap を前提にする）。`cdk synth` したテンプレートを、CloudFormation で直接適用する。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
    ```bash
-   pnpm exec cdk synth IzuSanDeployer --exclusively -q
-   # 変更セットを作って内容を確認する（実行はしない）
-   aws cloudformation deploy --region us-east-1 --stack-name IzuSanDeployer \
-     --template-file cdk.out/IzuSanDeployer.template.json \
-     --capabilities CAPABILITY_NAMED_IAM --no-execute-changeset
-   aws cloudformation describe-change-set --region us-east-1 --stack-name IzuSanDeployer \
-     --change-set-name <deploy の出力に出る変更セット名>
-   # 問題なければ実行する
-   aws cloudformation execute-change-set --region us-east-1 --stack-name IzuSanDeployer \
-     --change-set-name <同じ変更セット名>
+   pnpm deployer:apply   # synth → 変更セット作成 → 内容表示 → 確認（y/N）→ 適用 → 完了待ち
    ```
+   `IzuSanDeployer` が変わるのは、実行ポリシーの権限・信頼条件・ロールを変えるときだけ。サイトの更新やインフラの通常の変更は `infra` ワークフロー（`IzuSanSite`）で適用でき、このスクリプトは要らない。インフラ更新ロールと実行ポリシー自体を CI で更新できると権限の分離が弱まるため、手元の管理者認証情報で行う。
+
 2. 作った実行ポリシーを使って bootstrap する。
    ```bash
    pnpm exec cdk bootstrap aws://<アカウント>/us-east-1 \
