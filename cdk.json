@@ -1,0 +1,8 @@
+{
+  "app": "node infra/bin/app.ts",
+  "watch": { "include": ["infra/**"] },
+  "context": {
+    "@aws-cdk/core:newStyleStackSynthesis": true,
+    "enableProductionAlias": false
+  }
+}
