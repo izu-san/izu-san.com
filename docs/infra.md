@@ -72,7 +72,7 @@ aws route53 list-resource-record-sets --hosted-zone-id <ZONE_ID> > route53-befor
 
 平文の資格情報（`user:pass`）は GitHub Secrets など、リポジトリの外で管理する。Function に入るのは SHA-256 のハッシュだけで、`cdk synth`／`deploy` を実行する環境の環境変数 `PREVIEW_AUTH_SHA256` で渡す。ハッシュは CloudFormation テンプレートと Function コードに残るため、リポジトリ・ログ・成果物に出さない（`cdk.out` は ignore 済み）。
 
-1. 新しい資格情報を作る。パスワードは長いランダム文字列にする（ハッシュから総当たりで復元されにくくするため）。例: `openssl rand -base64 36`。
+1. 新しい資格情報を作る。ハッシュはソルトなしの高速な SHA-256 で（CloudFront Functions では bcrypt などが使えない）、漏れると総当たりが速いため、パスワードは 32 文字以上の長いランダム文字列にする。スクリプトは 32 文字未満を拒否する。例: `openssl rand -base64 36`。
 2. ハッシュを作る。引数や履歴に残さないよう、標準入力で渡す。
    ```bash
    read -rs CRED   # 「user:pass」を入力
