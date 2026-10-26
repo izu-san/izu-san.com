@@ -64,12 +64,12 @@ test('OIDC: インフラ更新ロールの信頼条件は、専用の Environmen
   const deploy = roleByName(t, 'izu-san-infra-deploy');
   assert.deepEqual(trustConditions(deploy as any), {
     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-    'token.actions.githubusercontent.com:sub': 'repo:izu-san/izu-san.com:environment:infra',
+    'token.actions.githubusercontent.com:sub': 'repo:izu-san@236948214/izu-san.com@1434149513:environment:infra',
   });
   const diff = roleByName(t, 'izu-san-infra-diff');
   assert.equal(
     trustConditions(diff as any)['token.actions.githubusercontent.com:sub'],
-    'repo:izu-san/izu-san.com:environment:infra-diff',
+    'repo:izu-san@236948214/izu-san.com@1434149513:environment:infra-diff',
   );
 });
 
@@ -83,7 +83,7 @@ test('OIDC: 信頼条件にワイルドカードを使わない', () => {
     const conditions = trustConditions(r.Properties);
     assert.deepEqual(Object.keys(r.Properties.AssumeRolePolicyDocument.Statement[0].Condition), ['StringEquals']);
     for (const value of Object.values(conditions)) assert.doesNotMatch(value, /\*/);
-    assert.match(conditions['token.actions.githubusercontent.com:sub'], /^repo:izu-san\/izu-san\.com:(environment|ref):[\w/.-]+$/);
+    assert.match(conditions['token.actions.githubusercontent.com:sub'], /^repo:izu-san@\d+\/izu-san\.com@\d+:(environment|ref):[\w/.-]+$/);
   }
 });
 
@@ -103,11 +103,11 @@ test('公開ロール: 信頼条件は、対象リポジトリと所定の参照
   const t = site();
   assert.deepEqual(trustConditions(roleByName(t, 'izu-san-publish-production') as any), {
     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-    'token.actions.githubusercontent.com:sub': 'repo:izu-san/izu-san.com:ref:refs/heads/main',
+    'token.actions.githubusercontent.com:sub': 'repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/main',
   });
   assert.deepEqual(trustConditions(roleByName(t, 'izu-san-publish-preview') as any), {
     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-    'token.actions.githubusercontent.com:sub': 'repo:izu-san/izu-san.com:ref:refs/heads/preview',
+    'token.actions.githubusercontent.com:sub': 'repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/preview',
   });
   for (const name of ['izu-san-publish-production', 'izu-san-publish-preview']) {
     const principal = (roleByName(t, name) as any).AssumeRolePolicyDocument.Statement[0].Principal;
@@ -226,4 +226,10 @@ test('IAM: 説明文は Latin-1 の範囲に収める（日本語だと CloudFor
     assert.ok(described.length > 0);
     for (const r of described) assert.match(r.Properties.Description, /^[\u0009\u000A\u000D -~¡-ÿ]*$/);
   }
+});
+
+test('IzuSanDeployer: bootstrap より先に適用できるよう、bootstrap の版チェックを含まない', () => {
+  const template = deployer().toJSON();
+  assert.equal(template.Parameters?.BootstrapVersion, undefined);
+  assert.equal(template.Rules?.CheckBootstrapVersion, undefined);
 });

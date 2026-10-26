@@ -36,14 +36,14 @@ pnpm exec cdk diff        # 適用済みとの差分（AWS の認証情報が必
 
 ## GitHub Actions の権限（OIDC、ZJS-8）
 
-GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認証で AWS に入る。信頼条件は、すべて `StringEquals`（ワイルドカードなし）で、`aud=sts.amazonaws.com` と、次の `sub` に限る。
+GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認証で AWS に入る。信頼条件は、すべて `StringEquals`（ワイルドカードなし）で、`aud=sts.amazonaws.com` と、次の `sub` に限る。このリポジトリは `sub` に不変の ID（所有者・リポジトリの数値 ID）を使う設定のため、名前ではなく ID で指す（`gh api repos/izu-san/izu-san.com/actions/oidc/customization/sub` で確認できる）。
 
 | ロール | 定義 | 信頼する `sub` | できること |
 | --- | --- | --- | --- |
-| `izu-san-publish-production` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/main` | 本番の S3 への配置・削除、`releases/production/` の読み書き、本番ディストリビューションのキャッシュ無効化 |
-| `izu-san-publish-preview` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/preview` | プレビューの S3 への配置・削除、`releases/preview/` の読み書き、プレビューのディストリビューションのキャッシュ無効化 |
-| `izu-san-infra-diff` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra-diff` | CDK の lookup ロール（読み取りのみ）を引き受けて `cdk diff` する |
-| `izu-san-infra-deploy` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra` | CDK の deploy・file-publishing・lookup ロールを引き受けて `cdk deploy` する |
+| `izu-san-publish-production` | `IzuSanSite` | `repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/main` | 本番の S3 への配置・削除、`releases/production/` の読み書き、本番ディストリビューションのキャッシュ無効化 |
+| `izu-san-publish-preview` | `IzuSanSite` | `repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/preview` | プレビューの S3 への配置・削除、`releases/preview/` の読み書き、プレビューのディストリビューションのキャッシュ無効化 |
+| `izu-san-infra-diff` | `IzuSanDeployer` | `repo:izu-san@236948214/izu-san.com@1434149513:environment:infra-diff` | CDK の lookup ロール（読み取りのみ）を引き受けて `cdk diff` する |
+| `izu-san-infra-deploy` | `IzuSanDeployer` | `repo:izu-san@236948214/izu-san.com@1434149513:environment:infra` | CDK の deploy・file-publishing・lookup ロールを引き受けて `cdk deploy` する |
 
 - Pull Request のワークフロー（`verify.yml`）は `contents: read` だけで、`id-token: write` を持たない。OIDC の `sub` も PR のものは通らない。`tests/oidc.test.ts` が、PR で動くワークフローに AWS 関連の設定が入らないことを確認する。
 - `infra-diff` は承認なしで動くが、引き受けられるのは読み取り専用の lookup ロールだけ。インフラの更新に使うロール（`izu-san-infra-deploy`）の信頼条件は、承認必須の Environment `infra` だけ。
@@ -54,10 +54,18 @@ GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認
 
 ### 初期設定（サイト所有者が 1 回だけ。AWS・GitHub の変更なので、実行前に確認する）
 
-1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
+1. 管理者権限で `IzuSanDeployer` を適用する（OIDC プロバイダー、`izu-san-infra-diff`・`izu-san-infra-deploy`、実行ポリシーを作る）。bootstrap より先に適用するため、`cdk deploy` は使えない（CDK が bootstrap を前提にする）。`cdk synth` したテンプレートを、CloudFormation で直接適用する。アカウントには GitHub の OIDC プロバイダーがまだ無いことを、`aws iam list-open-id-connect-providers` で確認する。
    ```bash
-   pnpm exec cdk diff IzuSanDeployer
-   pnpm exec cdk deploy IzuSanDeployer --exclusively
+   pnpm exec cdk synth IzuSanDeployer --exclusively -q
+   # 変更セットを作って内容を確認する（実行はしない）
+   aws cloudformation deploy --region us-east-1 --stack-name IzuSanDeployer \
+     --template-file cdk.out/IzuSanDeployer.template.json \
+     --capabilities CAPABILITY_NAMED_IAM --no-execute-changeset
+   aws cloudformation describe-change-set --region us-east-1 --stack-name IzuSanDeployer \
+     --change-set-name <deploy の出力に出る変更セット名>
+   # 問題なければ実行する
+   aws cloudformation execute-change-set --region us-east-1 --stack-name IzuSanDeployer \
+     --change-set-name <同じ変更セット名>
    ```
 2. 作った実行ポリシーを使って bootstrap する。
    ```bash
