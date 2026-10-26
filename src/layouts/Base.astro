@@ -21,6 +21,7 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <script is:inline>document.documentElement.classList.add('js');</script>
     {noindex ? (
       <meta name="robots" content="noindex" />
     ) : (

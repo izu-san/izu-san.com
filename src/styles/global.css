@@ -153,8 +153,19 @@ ul {
 
 /* セクション: 左に見出し、右に内容。狭い画面では縦に積む */
 .section {
-  border-top: 1px solid var(--rule);
+  position: relative;
   padding-block: var(--space);
+}
+
+/* セクション上端の罫線（スクロール演出で伸ばすため、border ではなく疑似要素） */
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--rule);
 }
 
 .section > .wrap {
@@ -476,4 +487,95 @@ main {
 
 .not-found p {
   margin-top: 1rem;
+}
+
+/* 動き: 控えめ（0.3〜0.6 秒）。減らす設定のときは付けない */
+@media (prefers-reduced-motion: no-preference) {
+  /* ヒーロー: 枠 → 寸法線 → 文字の順に描かれる（CSS のみ・読み込み時に 1 回） */
+  .titleblock {
+    animation: draw-frame 0.6s ease-out both;
+  }
+
+  .dim::before {
+    transform-origin: left;
+    animation: draw-line 0.5s ease-out 0.3s both;
+  }
+
+  .dim,
+  .dim span {
+    animation: fade-in 0.3s ease-out 0.6s both;
+  }
+
+  .hero h1 {
+    animation: rise 0.5s ease-out 0.3s both;
+  }
+
+  .hero .headline {
+    animation: rise 0.5s ease-out 0.5s both;
+  }
+
+  .hero .notes,
+  .hero .prose {
+    animation: rise 0.5s ease-out 0.65s both;
+  }
+
+  @keyframes draw-frame {
+    from {
+      clip-path: inset(-4px 100% -4px -4px);
+    }
+    to {
+      clip-path: inset(-4px -4px -4px -4px);
+    }
+  }
+
+  @keyframes draw-line {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* スクロール: 罫線が左から伸び、パネルが順に現れる（JavaScript が使えるときだけ） */
+  .js .section::before {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .js .section.is-visible::before {
+    transform: scaleX(1);
+    transition: transform 0.6s ease-out;
+  }
+
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.4s ease-out calc(var(--i, 0) * 80ms),
+      transform 0.4s ease-out calc(var(--i, 0) * 80ms),
+      border-color 0.2s;
+  }
+
+  .panel {
+    transition: border-color 0.2s;
+  }
 }
