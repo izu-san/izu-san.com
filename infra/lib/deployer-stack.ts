@@ -101,6 +101,12 @@ export class DeployerStack extends Stack {
           ],
           resources: ['*'],
         }),
+        // CreateSubscription が、呼び出し元の権限で読む項目（CloudTrail で拒否を確認した）。読み取りだけ。
+        new iam.PolicyStatement({
+          sid: 'PricingPlanReadDependencies',
+          actions: ['shield:ListProtections', 'freetier:GetAccountPlanState'],
+          resources: ['*'],
+        }),
         new iam.PolicyStatement({
           sid: 'Route53Read',
           actions: ['route53:GetChange', 'route53:GetHostedZone', 'route53:ListResourceRecordSets'],
