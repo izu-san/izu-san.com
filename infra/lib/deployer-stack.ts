@@ -83,6 +83,14 @@ export class DeployerStack extends Stack {
           resources: ['*'],
         }),
         // 料金プランは、有料への変更に使う ApprovePaidSubscription と UpdateSubscription を付けない。
+        // テンプレートの BootstrapVersion パラメーター（bootstrap の版）を、CloudFormation が読む。
+        new iam.PolicyStatement({
+          sid: 'BootstrapVersion',
+          actions: ['ssm:GetParameters'],
+          resources: [
+            `arn:${this.partition}:ssm:${REGION}:${this.account}:parameter/cdk-bootstrap/${BOOTSTRAP_QUALIFIER}/version`,
+          ],
+        }),
         new iam.PolicyStatement({
           sid: 'PricingPlan',
           actions: [
@@ -126,6 +134,11 @@ export class DeployerStack extends Stack {
             'iam:CreateRole',
             'iam:DeleteRole',
             'iam:GetRole',
+            'iam:UpdateRole',
+            'iam:ListRolePolicies',
+            'iam:ListAttachedRolePolicies',
+            'iam:ListRoleTags',
+            'iam:ListInstanceProfilesForRole',
             'iam:UpdateAssumeRolePolicy',
             'iam:PutRolePolicy',
             'iam:DeleteRolePolicy',

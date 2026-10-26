@@ -1,9 +1,9 @@
 name: verify
 
+# Pull Request でだけ動かす。push でも動かすと、同じ内容の検証が preview→main の PR と重複する。
+# main へのマージは PR の検証が必須（ブランチ保護）なので、マージ後の push での再検証は省く。
 on:
   pull_request:
-  push:
-    branches: [main, preview]
 
 # 検証のみ。AWS の権限は付与しない。
 permissions:
