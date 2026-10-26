@@ -33,7 +33,7 @@ export const ui: Record<Lang, Ui> = {
     tech: '使用技術',
     status: { title: '稼働状況', updated: '最終更新', kinds: { running: '稼働中', idle: '待機中', next: '次' } },
     token: { label: '次トークン候補' },
-    approval: { designed: '設計', checked: '照査', approved: '承認', you: 'あなた', open: 'ご連絡で完了します' },
+    approval: { designed: '設計', checked: '審査', approved: '承認', you: 'あなた', open: 'ご連絡で完了します' },
     present: '現在',
     footer: '© 2026 Izu-san',
   },
