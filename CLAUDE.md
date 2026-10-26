@@ -16,6 +16,7 @@
 - 作業ブランチ `<ISSUE-ID>-<短い英語の説明>` → `preview`（`--no-ff`）→ 表示確認 → `preview` から `main` へ PR（マージコミット、squash しない）。
 - `main` への直接 push は禁止（GitHub のブランチ保護で PR 必須、管理者にも適用）。小さな修正でも作業ブランチ → `preview` → PR を経由する。
 - PR では検証のみを行い、AWS 権限を付けない。マージはサイト所有者が行う。
+- PR のマージ後は、マージコミットが `main` にしか無く、`preview` が必ず `main` より遅れる。サイト所有者への確認なしで、`main` を `git pull --ff-only` で最新にし、`preview` に `main` を取り込んで `git push origin preview` し、`gh run list` で verify の結果を確認する。`preview` は削除しない。ほかのチケットの未反映の変更が `preview` に載っている場合だけ、取り込む前にサイト所有者へ扱いを確認する。
 
 ## コミット
 
