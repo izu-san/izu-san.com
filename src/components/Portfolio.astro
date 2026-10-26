@@ -56,15 +56,26 @@ const { Content } = profile;
     <section id="works" class="section" aria-labelledby="works-h">
       <div class="wrap">
         <h2 id="works-h" class="section-title">{t.nav.works}</h2>
-        <div class="rows">
-          {works.map((w) => (
-            <article>
-              <h3 class="row-title"><a href={w.url}>{w.copy.name}</a></h3>
-              <p class="row-body">{w.copy.summary}</p>
-              <p class="meta">{t.tech}: {w.tech.join(' / ')}</p>
-            </article>
-          ))}
-        </div>
+        <table class="bom">
+          <thead>
+            <tr>
+              <th scope="col">{t.bom.no}</th>
+              <th scope="col">{t.bom.name}</th>
+              <th scope="col">{t.bom.summary}</th>
+              <th scope="col">{t.tech}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {works.map((w, i) => (
+              <tr>
+                <td class="bom-no">{String(i + 1).padStart(2, '0')}</td>
+                <th scope="row" class="bom-name"><a href={w.url}>{w.copy.name}</a></th>
+                <td>{w.copy.summary}</td>
+                <td class="bom-tech" data-label={t.tech}>{w.tech.join(' / ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
 

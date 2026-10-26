@@ -364,6 +364,107 @@ main {
   color: var(--muted);
 }
 
+/* 個人開発: 部品表（BOM）。狭い画面では行を縦に積む */
+.bom {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bom thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.bom tr {
+  display: block;
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.bom tbody tr:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.bom td,
+.bom th {
+  display: block;
+  padding: 0;
+  text-align: left;
+  font-weight: 400;
+}
+
+.bom-no {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+}
+
+.bom .bom-name {
+  font-size: 1.125rem;
+}
+
+.bom td:nth-child(3) {
+  margin-top: 0.5rem;
+  max-width: 40rem;
+}
+
+.bom-tech {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.bom-tech::before {
+  content: attr(data-label) ': ';
+}
+
+@media (min-width: 52rem) {
+  .bom thead {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+
+  .bom tr {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    gap: 0 1.5rem;
+    padding-block: 1rem;
+  }
+
+  .bom thead tr {
+    padding-block: 0 0.5rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--accent);
+  }
+
+  .bom thead th {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .bom tbody tr:first-child {
+    padding-top: 1rem;
+  }
+
+  .bom td:nth-child(3),
+  .bom-tech {
+    margin-top: 0;
+  }
+
+  .bom-tech::before {
+    content: none;
+  }
+}
+
 /* スキル */
 .skill-group h3 {
   font-size: 1rem;

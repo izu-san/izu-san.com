@@ -15,6 +15,7 @@ interface Ui {
   switchLabel: string;
   switchText: string;
   tech: string;
+  bom: { no: string; name: string; summary: string };
   present: string;
   footer: string;
 }
@@ -28,6 +29,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: '言語',
     switchText: 'English',
     tech: '使用技術',
+    bom: { no: '番号', name: '名称', summary: '概要' },
     present: '現在',
     footer: '© 2026 Izu-san',
   },
@@ -38,6 +40,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: 'Language',
     switchText: '日本語',
     tech: 'Tech',
+    bom: { no: 'No.', name: 'Name', summary: 'Summary' },
     present: 'present',
     footer: '© 2026 Izu-san',
   },
