@@ -1,0 +1,4 @@
+order: 3
+label: Email
+kind: email
+url: mailto:contact@example.com

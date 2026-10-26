@@ -27,13 +27,14 @@ Node.js は `.nvmrc`、pnpm は `package.json` の `packageManager` で固定し
 
 ```bash
 pnpm install --frozen-lockfile  # 依存関係の取得（ロックファイルどおり）
-pnpm check                      # 型チェック（astro check）
+pnpm check                      # 型チェック（astro check）。コンテンツの検証も含む
+pnpm test                       # スキーマ検証のテスト（翻訳の欠落などを検出）
 pnpm build                      # 静的ファイルを dist/ に生成
-pnpm verify                     # check と build をまとめて実行（CI と同じ検証）
+pnpm verify                     # check・test・build をまとめて実行（CI と同じ検証）
 pnpm dev / pnpm preview         # 開発サーバー / ビルド結果の確認
 ```
 
-コンテンツと日英の必須項目の検証は、Content Collections の導入後に `pnpm check` へ含める。
+コンテンツのスキーマは `src/lib/schemas.ts`、データは `src/content/`。日英の欠落や空欄、定義外の項目は `pnpm check` と `pnpm build` で失敗する。
 
 ## 守ること
 
