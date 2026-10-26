@@ -48,7 +48,8 @@ GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認
 - Pull Request のワークフロー（`verify.yml`）は `contents: read` だけで、`id-token: write` を持たない。OIDC の `sub` も PR のものは通らない。`tests/oidc.test.ts` が、PR で動くワークフローに AWS 関連の設定が入らないことを確認する。
 - `infra-diff` は承認なしで動くが、引き受けられるのは読み取り専用の lookup ロールだけ。インフラの更新に使うロール（`izu-san-infra-deploy`）の信頼条件は、承認必須の Environment `infra` だけ。
 - 成果物の保管先は環境ごとの接頭辞（`releases/production/<コミットID>/`、`releases/preview/<コミットID>/`）に分け、プレビューのロールが本番の保管済み成果物（ロールバックの元）を書き換えられないようにする。ライフサイクルの `releases/` 30 日は、両方に効く。
-- CloudFormation の実行ポリシー（`izu-san-cfn-execution`）は管理者権限にせず、S3・CloudFront・ACM・WAF、料金プラン（`CreateSubscription`・`GetSubscription`・`ListSubscriptions`・`CancelSubscription` のみ）、Route 53、公開用ロールの IAM だけを許可する。
+- CloudFormation の実行ポリシー（`izu-san-cfn-execution`）は管理者権限にせず、S3・CloudFront・ACM・WAF、料金プラン、Shield・Free Tier の読み取り、Route 53、公開用ロールの IAM だけを、サービス単位で許可する。細かい API 名で許可すると、依存先の権限が足りず適用が止まりやすいため。守る点は明示的な Deny と条件で担保する。
+  - 有料への変更に使う `pricingplanmanager:ApprovePaidSubscription` と `UpdateSubscription` は、明示的な Deny で必ず拒否する（`DenyPaidPlans`）。
   - Route 53 の変更は条件キーで絞れる。対象は、このホストゾーンの `izu-san.com`・`preview.izu-san.com` の A/AAAA と、ACM 検証用の `_*.izu-san.com`・`_*.preview.izu-san.com` の CNAME。MX・TXT・NS・SOA などは拒否される。`_*` は検証レコード以外の `_` で始まる名前の CNAME も許すので、適用前の `route53-before.json` との差分確認は省かない。
   - 初回の適用で権限不足が出たら、拒否された操作だけを足す。広いワイルドカードに戻さない。
 
