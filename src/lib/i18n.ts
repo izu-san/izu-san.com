@@ -15,6 +15,7 @@ interface Ui {
   switchLabel: string;
   switchText: string;
   tech: string;
+  approval: { designed: string; checked: string; approved: string; you: string; open: string };
   present: string;
   footer: string;
 }
@@ -28,6 +29,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: '言語',
     switchText: 'English',
     tech: '使用技術',
+    approval: { designed: '設計', checked: '照査', approved: '承認', you: 'あなた', open: 'ご連絡で完了します' },
     present: '現在',
     footer: '© 2026 Izu-san',
   },
@@ -38,6 +40,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: 'Language',
     switchText: '日本語',
     tech: 'Tech',
+    approval: { designed: 'Designed by', checked: 'Checked by', approved: 'Approved by', you: 'You', open: 'Awaiting your message' },
     present: 'present',
     footer: '© 2026 Izu-san',
   },

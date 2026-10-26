@@ -59,10 +59,16 @@ const { Content } = profile;
         <ul class="panels">
           {works.map((w, i) => (
             <li class="panel reveal" style={`--i: ${i}`}>
-              <p class="panel-no" aria-hidden="true">PART {String(i + 1).padStart(2, '0')}</p>
               <h3 class="panel-title"><a class="panel-link" href={w.url}>{w.copy.name}</a></h3>
               <p class="panel-body">{w.copy.summary}</p>
-              <p class="meta">{t.tech}: {w.tech.join(' / ')}</p>
+              <div class="recipe">
+                <p class="sr-only">{t.tech}:</p>
+                <ul class="recipe-in">
+                  {w.tech.map((name) => <li>{name}</li>)}
+                </ul>
+                <span class="recipe-arrow" aria-hidden="true">→</span>
+                <span class="recipe-out" aria-hidden="true">PART {String(i + 1).padStart(2, '0')}</span>
+              </div>
             </li>
           ))}
         </ul>
@@ -103,14 +109,21 @@ const { Content } = profile;
     <section id="contact" class="section" aria-labelledby="contact-h">
       <div class="wrap">
         <h2 id="contact-h" class="section-title">{t.nav.contact}</h2>
-        <ul class="panels panels-links">
-          {links.map((l, i) => (
-            <li class="panel reveal" style={`--i: ${i}`}>
-              <h3 class="panel-title"><a class="panel-link" href={l.url}>{l.label}</a></h3>
-              <p class="meta">{l.url.replace(/^(mailto:|https?:\/\/)/, '')}</p>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <dl class="approval">
+            <div><dt>{t.approval.designed}</dt><dd>{profile.data.name}</dd></div>
+            <div><dt>{t.approval.checked}</dt><dd>{t.approval.you}</dd></div>
+            <div class="approval-open"><dt>{t.approval.approved}</dt><dd>{t.approval.open}</dd></div>
+          </dl>
+          <ul class="panels panels-links">
+            {links.map((l, i) => (
+              <li class="panel reveal" style={`--i: ${i}`}>
+                <h3 class="panel-title"><a class="panel-link" href={l.url}>{l.label}</a></h3>
+                <p class="meta">{l.url.replace(/^(mailto:|https?:\/\/)/, '')}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   </main>
