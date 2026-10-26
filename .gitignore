@@ -1,0 +1,30 @@
+# 依存関係・生成物
+node_modules/
+dist/
+cdk.out/
+.astro/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# 秘密情報・環境変数
+.env
+.env.*
+!.env.example
+
+# OS・エディター
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# エージェント関連（自作の youtrack-ticket-dev のみ追跡する）
+.claude/settings.local.json
+.claude/agents/
+.claude/skills/*
+!.claude/skills/youtrack-ticket-dev/
+.agents/
+.codex/
+.opencode/
+.impeccable/
