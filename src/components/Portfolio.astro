@@ -10,8 +10,9 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const other = otherLang(lang);
-const { profile, works, skills, career, links } = await loadSiteContent(lang);
+const { profile, works, skills, career, status, links } = await loadSiteContent(lang);
 const { Content } = profile;
+const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word === word);
 ---
 
 <Base lang={lang} title={profile.data.pageTitle} description={profile.data.description}>
@@ -43,10 +44,45 @@ const { Content } = profile;
               <div class="dim" aria-hidden="true"><span>1:1</span></div>
             </div>
             <p class="headline">{profile.data.headline}</p>
-            <ol class="notes">{profile.data.interests.map((i) => <li>{i}</li>)}</ol>
+            <ol class="notes">
+              {profile.data.interests.map((i) => {
+                const token = tokenFor(i);
+                return (
+                  <li>
+                    {token ? (
+                      <details class="token">
+                        <summary>{i}</summary>
+                        <div class="token-pop">
+                          <p class="token-label">{t.token.label}</p>
+                          <ul>
+                            {token.candidates.map((c) => (
+                              <li><span>{c.text}</span><span>{c.p.toFixed(2)}</span></li>
+                            ))}
+                          </ul>
+                        </div>
+                      </details>
+                    ) : (
+                      i
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
             <div class="prose">
               <Content />
             </div>
+            <section class="status" aria-labelledby="status-h">
+              <h2 id="status-h" class="status-title">{t.status.title}</h2>
+              <dl>
+                {status.items.map((item) => (
+                  <div class={`status-row status-${item.kind}`}>
+                    <dt>{t.status.kinds[item.kind]}</dt>
+                    <dd>{item.text}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="status-updated">{t.status.updated}: <time datetime={status.updated}>{status.updated}</time></p>
+            </section>
           </div>
           <p class="tb-label" aria-hidden="true"><span>SCALE 1:1</span><span>SHEET 1/1</span></p>
         </div>
@@ -135,6 +171,26 @@ const { Content } = profile;
   </footer>
 
   <script>
+    // 次トークン候補: 同時に開くのは 1 つだけ。外側のクリックと Escape で閉じる。
+    const tokens = [...document.querySelectorAll<HTMLDetailsElement>('details.token')];
+    for (const d of tokens) {
+      d.addEventListener('toggle', () => {
+        if (d.open) for (const o of tokens) if (o !== d) o.open = false;
+      });
+    }
+    addEventListener('click', (e) => {
+      for (const d of tokens) if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+    addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      for (const d of tokens) {
+        if (d.open) {
+          d.open = false;
+          d.querySelector('summary')?.focus();
+        }
+      }
+    });
+
     // スクロールで現れる演出。動きを減らす設定のときは何もしない（CSS 側でも無効）。
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const targets = document.querySelectorAll('.section, .reveal');

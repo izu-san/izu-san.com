@@ -314,6 +314,8 @@ main {
 }
 
 .notes {
+  position: relative;
+  z-index: 2; /* 候補のポップアップを下の本文より前に出す */
   margin: 1.5rem 0 0;
   padding: 0;
   list-style: none;
@@ -325,11 +327,11 @@ main {
   color: var(--muted);
 }
 
-.notes li {
+.notes > li {
   counter-increment: note;
 }
 
-.notes li::before {
+.notes > li::before {
   content: 'NOTE ' counter(note) '. ';
   color: var(--accent);
 }
@@ -426,6 +428,127 @@ main {
 
 .panel-body {
   margin-top: 0.5rem;
+}
+
+/* 次トークン候補: <details> なので JavaScript なしでも開閉できる */
+.token {
+  position: relative;
+  display: inline-block;
+}
+
+.token summary {
+  cursor: pointer;
+  color: var(--text);
+  list-style: none;
+  text-decoration: underline dotted var(--accent);
+  text-underline-offset: 0.3em;
+}
+
+.token summary::-webkit-details-marker {
+  display: none;
+}
+
+.token summary::after {
+  content: ' ▾';
+  color: var(--accent);
+}
+
+.token[open] summary::after {
+  content: ' ▴';
+}
+
+.token-pop {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 4;
+  width: max-content;
+  min-width: 12rem;
+  max-width: min(18rem, 80vw);
+  margin-top: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+}
+
+.token-label {
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.token-pop ul {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.token-pop li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text);
+}
+
+.token-pop li::before {
+  content: none;
+}
+
+/* 稼働状況: 工場の操業ボード */
+.status {
+  margin-top: 2rem;
+  max-width: 40rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.status-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.status dl {
+  margin: 0.5rem 0 0;
+}
+
+.status-row {
+  display: grid;
+  gap: 0 1rem;
+  padding-block: 0.25rem;
+}
+
+.status dt {
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.status-running dt {
+  color: var(--accent);
+}
+
+.status-running dt::before {
+  content: '▪ ';
+}
+
+.status dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+}
+
+.status-updated {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
+@media (min-width: 40rem) {
+  .status-row {
+    grid-template-columns: 8rem minmax(0, 1fr);
+  }
 }
 
 /* レシピ: 使用技術（入力）→ 作品（出力） */
