@@ -12,6 +12,8 @@ interface Props {
 }
 
 const { lang, title, description, noindex = false } = Astro.props;
+// プレビューのビルドは PUBLIC_SITE_ENV=preview を付ける。検索に載せない。
+const isPreview = import.meta.env.PUBLIC_SITE_ENV === 'preview';
 const url = (l: Lang) => new URL(paths[l], Astro.site).href;
 ---
 
@@ -22,9 +24,8 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <script is:inline>document.documentElement.classList.add('js');</script>
-    {noindex ? (
-      <meta name="robots" content="noindex" />
-    ) : (
+    {(noindex || isPreview) && <meta name="robots" content={isPreview ? 'noindex, nofollow' : 'noindex'} />}
+    {!noindex && (
       <>
         <meta name="description" content={description} />
         <link rel="canonical" href={url(lang)} />

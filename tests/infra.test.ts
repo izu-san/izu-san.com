@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
@@ -6,9 +7,12 @@ import { SiteStack } from '../infra/lib/site-stack.ts';
 
 const env = { account: '123456789012', region: 'us-east-1' };
 
-function synth(enableProductionAlias = false) {
+// テスト用のハッシュ（本物ではない）。
+const TEST_HASH = createHash('sha256').update('tester:not-a-real-credential').digest('hex');
+
+function synth(enableProductionAlias = false, previewAuthSha256: string | undefined = TEST_HASH) {
   const app = new App();
-  const stack = new SiteStack(app, 'Test', { env, enableProductionAlias });
+  const stack = new SiteStack(app, 'Test', { env, enableProductionAlias, previewAuthSha256 });
   return Template.fromStack(stack);
 }
 
@@ -106,5 +110,43 @@ test('インフラ: 費用通知用のタグを付ける', () => {
   const t = synth();
   t.hasResourceProperties('AWS::CloudFront::Distribution', {
     Tags: Match.arrayWith([{ Key: 'Project', Value: 'izu-san.com' }]),
+  });
+});
+
+function functionCodes(t: Template) {
+  return Object.values(t.findResources('AWS::CloudFront::Function')).map(
+    (f) => f.Properties.FunctionCode as string,
+  );
+}
+
+test('インフラ: 認証のハッシュはプレビューの Function だけに入り、本番には入らない', () => {
+  const codes = functionCodes(synth());
+  assert.equal(codes.length, 2);
+  const withHash = codes.filter((c) => c.includes(TEST_HASH));
+  assert.equal(withHash.length, 1);
+  assert.match(withHash[0], /var AUTH_REQUIRED = true;/);
+  const other = codes.find((c) => !c.includes(TEST_HASH))!;
+  assert.match(other, /var AUTH_REQUIRED = false;/);
+  assert.match(other, /var AUTH_SHA256 = "";/);
+});
+
+test('インフラ: ハッシュ未指定でもプレビューは認証必須のまま（全拒否）', () => {
+  const codes = functionCodes(synth(false, undefined));
+  assert.equal(codes.filter((c) => c.includes('var AUTH_REQUIRED = true;')).length, 1);
+  assert.equal(codes.filter((c) => c.includes('var AUTH_REQUIRED = false;')).length, 1);
+});
+
+test('インフラ: 不正なハッシュでは synth が失敗する', () => {
+  assert.throws(() => synth(false, 'not-a-hash'));
+});
+
+test('インフラ: Function は両環境とも viewer-request に 1 つだけ関連付ける', () => {
+  const t = synth();
+  t.allResourcesProperties('AWS::CloudFront::Distribution', {
+    DistributionConfig: Match.objectLike({
+      DefaultCacheBehavior: Match.objectLike({
+        FunctionAssociations: [Match.objectLike({ EventType: 'viewer-request' })],
+      }),
+    }),
   });
 });
