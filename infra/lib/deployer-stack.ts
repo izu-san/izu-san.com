@@ -6,7 +6,7 @@ import {
   CFN_EXECUTION_POLICY_NAME,
   DEPLOY_ENVIRONMENT,
   DIFF_ENVIRONMENT,
-  GITHUB_REPO,
+  GITHUB_SUB_PREFIX,
   OIDC_PROVIDER_HOST,
   REGION,
   ROLE_NAMES,
@@ -42,7 +42,7 @@ export class DeployerStack extends Stack {
       new iam.WebIdentityPrincipal(provider.oidcProviderArn, {
         StringEquals: {
           [`${OIDC_PROVIDER_HOST}:aud`]: 'sts.amazonaws.com',
-          [`${OIDC_PROVIDER_HOST}:sub`]: `repo:${GITHUB_REPO}:environment:${environment}`,
+          [`${OIDC_PROVIDER_HOST}:sub`]: `${GITHUB_SUB_PREFIX}:environment:${environment}`,
         },
       });
     const bootstrapRole = (kind: string) =>

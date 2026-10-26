@@ -36,14 +36,14 @@ pnpm exec cdk diff        # 適用済みとの差分（AWS の認証情報が必
 
 ## GitHub Actions の権限（OIDC、ZJS-8）
 
-GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認証で AWS に入る。信頼条件は、すべて `StringEquals`（ワイルドカードなし）で、`aud=sts.amazonaws.com` と、次の `sub` に限る。
+GitHub Actions は、長期のアクセスキーを持たず、OIDC の一時認証で AWS に入る。信頼条件は、すべて `StringEquals`（ワイルドカードなし）で、`aud=sts.amazonaws.com` と、次の `sub` に限る。このリポジトリは `sub` に不変の ID（所有者・リポジトリの数値 ID）を使う設定のため、名前ではなく ID で指す（`gh api repos/izu-san/izu-san.com/actions/oidc/customization/sub` で確認できる）。
 
 | ロール | 定義 | 信頼する `sub` | できること |
 | --- | --- | --- | --- |
-| `izu-san-publish-production` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/main` | 本番の S3 への配置・削除、`releases/production/` の読み書き、本番ディストリビューションのキャッシュ無効化 |
-| `izu-san-publish-preview` | `IzuSanSite` | `repo:izu-san/izu-san.com:ref:refs/heads/preview` | プレビューの S3 への配置・削除、`releases/preview/` の読み書き、プレビューのディストリビューションのキャッシュ無効化 |
-| `izu-san-infra-diff` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra-diff` | CDK の lookup ロール（読み取りのみ）を引き受けて `cdk diff` する |
-| `izu-san-infra-deploy` | `IzuSanDeployer` | `repo:izu-san/izu-san.com:environment:infra` | CDK の deploy・file-publishing・lookup ロールを引き受けて `cdk deploy` する |
+| `izu-san-publish-production` | `IzuSanSite` | `repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/main` | 本番の S3 への配置・削除、`releases/production/` の読み書き、本番ディストリビューションのキャッシュ無効化 |
+| `izu-san-publish-preview` | `IzuSanSite` | `repo:izu-san@236948214/izu-san.com@1434149513:ref:refs/heads/preview` | プレビューの S3 への配置・削除、`releases/preview/` の読み書き、プレビューのディストリビューションのキャッシュ無効化 |
+| `izu-san-infra-diff` | `IzuSanDeployer` | `repo:izu-san@236948214/izu-san.com@1434149513:environment:infra-diff` | CDK の lookup ロール（読み取りのみ）を引き受けて `cdk diff` する |
+| `izu-san-infra-deploy` | `IzuSanDeployer` | `repo:izu-san@236948214/izu-san.com@1434149513:environment:infra` | CDK の deploy・file-publishing・lookup ロールを引き受けて `cdk deploy` する |
 
 - Pull Request のワークフロー（`verify.yml`）は `contents: read` だけで、`id-token: write` を持たない。OIDC の `sub` も PR のものは通らない。`tests/oidc.test.ts` が、PR で動くワークフローに AWS 関連の設定が入らないことを確認する。
 - `infra-diff` は承認なしで動くが、引き受けられるのは読み取り専用の lookup ロールだけ。インフラの更新に使うロール（`izu-san-infra-deploy`）の信頼条件は、承認必須の Environment `infra` だけ。

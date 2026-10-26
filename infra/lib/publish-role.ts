@@ -4,7 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import {
-  GITHUB_REPO,
+  GITHUB_SUB_PREFIX,
   OIDC_PROVIDER_HOST,
   PUBLISH_REFS,
   ROLE_NAMES,
@@ -37,7 +37,7 @@ export class PublishRole extends Construct {
       assumedBy: new iam.WebIdentityPrincipal(providerArn, {
         StringEquals: {
           [`${OIDC_PROVIDER_HOST}:aud`]: 'sts.amazonaws.com',
-          [`${OIDC_PROVIDER_HOST}:sub`]: `repo:${GITHUB_REPO}:ref:${PUBLISH_REFS[props.name]}`,
+          [`${OIDC_PROVIDER_HOST}:sub`]: `${GITHUB_SUB_PREFIX}:ref:${PUBLISH_REFS[props.name]}`,
         },
       }),
     });

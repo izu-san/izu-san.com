@@ -16,6 +16,10 @@ export const COST_TAG_VALUE = 'izu-san.com';
 
 // GitHub Actions から AWS へ入るための固定値（ZJS-8）。
 export const GITHUB_REPO = 'izu-san/izu-san.com';
+// このリポジトリは OIDC の sub に不変の ID（所有者・リポジトリの数値 ID）を使う設定。
+// 名前の変更や移管・再作成で、別のリポジトリが同じ sub を名乗れないようにするため。
+// `gh api repos/izu-san/izu-san.com/actions/oidc/customization/sub` で確認できる。
+export const GITHUB_SUB_PREFIX = 'repo:izu-san@236948214/izu-san.com@1434149513';
 export const OIDC_PROVIDER_HOST = 'token.actions.githubusercontent.com';
 // 承認の要らない `cdk diff` 用と、承認必須の `cdk deploy` 用の GitHub Environment。
 export const DIFF_ENVIRONMENT = 'infra-diff';
