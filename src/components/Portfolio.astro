@@ -15,69 +15,93 @@ const { Content } = profile;
 ---
 
 <Base lang={lang} title={profile.data.pageTitle} description={profile.data.description}>
-  <header>
-    <p>{profile.data.name}</p>
-    <nav aria-label="sections">
-      <ul>
-        {sectionIds.map((id) => <li><a href={`#${id}`}>{t.nav[id]}</a></li>)}
-      </ul>
-    </nav>
-    <p>
-      {t.switchLabel}:
-      <a id="lang-switch" href={paths[other]} hreflang={other} lang={other}>{ui[lang].switchText}</a>
-    </p>
+  <a class="skip-link" href="#main">{t.skip}</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <p class="site-name">{profile.data.name}</p>
+      <nav class="site-nav" aria-label={t.navLabel}>
+        <ul>
+          {sectionIds.map((id) => <li><a href={`#${id}`}>{t.nav[id]}</a></li>)}
+        </ul>
+      </nav>
+      <p class="lang-switch">
+        {t.switchLabel}:
+        <a id="lang-switch" href={paths[other]} hreflang={other} lang={other}>{t.switchText}</a>
+      </p>
+    </div>
   </header>
 
-  <main>
-    <section id="profile" aria-labelledby="profile-h">
-      <h1 id="profile-h">{profile.data.name}</h1>
-      <p>{profile.data.headline}</p>
-      <ul>{profile.data.interests.map((i) => <li>{i}</li>)}</ul>
-      <Content />
-    </section>
-
-    <section id="works" aria-labelledby="works-h">
-      <h2 id="works-h">{t.nav.works}</h2>
-      {works.map((w) => (
-        <article>
-          <h3><a href={w.url}>{w.copy.name}</a></h3>
-          <p>{w.copy.summary}</p>
-          <p>{t.tech}: {w.tech.join(', ')}</p>
-        </article>
-      ))}
-    </section>
-
-    <section id="skills" aria-labelledby="skills-h">
-      <h2 id="skills-h">{t.nav.skills}</h2>
-      {skills.map((s) => (
-        <div>
-          <h3>{s.label}</h3>
-          <dl>
-            {s.items.map((i) => <><dt>{i.name}</dt><dd>{i.usage}</dd></>)}
-          </dl>
+  <main id="main">
+    <section id="profile" class="hero" aria-labelledby="profile-h">
+      <div class="wrap">
+        <h1 id="profile-h">{profile.data.name}</h1>
+        <p class="headline">{profile.data.headline}</p>
+        <ul class="tags">{profile.data.interests.map((i) => <li>{i}</li>)}</ul>
+        <div class="prose" style="margin-top: 1.5rem">
+          <Content />
         </div>
-      ))}
+      </div>
     </section>
 
-    <section id="career" aria-labelledby="career-h">
-      <h2 id="career-h">{t.nav.career}</h2>
-      {career.map((c) => (
-        <article>
-          <h3>{c.field}</h3>
-          <p><time>{c.start}</time> – {c.end ? <time>{c.end}</time> : t.present}</p>
-          <p>{c.description}</p>
-        </article>
-      ))}
+    <section id="works" class="section" aria-labelledby="works-h">
+      <div class="wrap">
+        <h2 id="works-h" class="section-title">{t.nav.works}</h2>
+        <div class="rows">
+          {works.map((w) => (
+            <article>
+              <h3 class="row-title"><a href={w.url}>{w.copy.name}</a></h3>
+              <p class="row-body">{w.copy.summary}</p>
+              <p class="meta">{t.tech}: {w.tech.join(' / ')}</p>
+            </article>
+          ))}
+        </div>
+      </div>
     </section>
 
-    <section id="contact" aria-labelledby="contact-h">
-      <h2 id="contact-h">{t.nav.contact}</h2>
-      <ul>{links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}</ul>
+    <section id="skills" class="section" aria-labelledby="skills-h">
+      <div class="wrap">
+        <h2 id="skills-h" class="section-title">{t.nav.skills}</h2>
+        <div class="rows">
+          {skills.map((s) => (
+            <div class="skill-group">
+              <h3>{s.label}</h3>
+              <dl class="skill-list">
+                {s.items.map((i) => <><dt>{i.name}</dt><dd>{i.usage}</dd></>)}
+              </dl>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="career" class="section" aria-labelledby="career-h">
+      <div class="wrap">
+        <h2 id="career-h" class="section-title">{t.nav.career}</h2>
+        <div class="rows">
+          {career.map((c) => (
+            <article>
+              <h3 class="row-title">{c.field}</h3>
+              <p class="meta"><time>{c.start}</time> – {c.end ? <time>{c.end}</time> : t.present}</p>
+              <p class="row-body">{c.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section" aria-labelledby="contact-h">
+      <div class="wrap">
+        <h2 id="contact-h" class="section-title">{t.nav.contact}</h2>
+        <ul class="links">{links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}</ul>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <p>{t.footer}</p>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>{t.footer}</p>
+    </div>
   </footer>
 
   <script>

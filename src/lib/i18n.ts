@@ -10,6 +10,8 @@ export type SectionId = (typeof sectionIds)[number];
 
 interface Ui {
   nav: Record<SectionId, string>;
+  skip: string;
+  navLabel: string;
   switchLabel: string;
   switchText: string;
   tech: string;
@@ -21,6 +23,8 @@ interface Ui {
 export const ui: Record<Lang, Ui> = {
   ja: {
     nav: { profile: 'プロフィール', works: '個人開発', skills: 'スキル', career: '職歴', contact: '連絡・外部リンク' },
+    skip: '本文へ移動',
+    navLabel: 'セクション',
     switchLabel: '言語',
     switchText: 'English',
     tech: '使用技術',
@@ -29,6 +33,8 @@ export const ui: Record<Lang, Ui> = {
   },
   en: {
     nav: { profile: 'Profile', works: 'Projects', skills: 'Skills', career: 'Career', contact: 'Contact' },
+    skip: 'Skip to content',
+    navLabel: 'Sections',
     switchLabel: 'Language',
     switchText: '日本語',
     tech: 'Tech',
