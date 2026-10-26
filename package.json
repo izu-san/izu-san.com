@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
+    "@fontsource/zen-kaku-gothic-new": "5.3.1",
     "astro": "^7.4.2",
     "typescript": "6.0.3"
   },

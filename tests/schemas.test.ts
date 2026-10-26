@@ -8,6 +8,7 @@ import {
   linkSchema,
   profileSchema,
   skillSchema,
+  statusSchema,
 } from '../src/lib/schemas.ts';
 
 const workSchema = createWorkSchema(z.string());
@@ -82,4 +83,41 @@ test('外部リンク: https と mailto 以外の URL はエラー', () => {
 
 test('order の重複を検出する', () => {
   assert.deepEqual(findDuplicateOrders([{ id: 'a', order: 1 }, { id: 'b', order: 1 }, { id: 'c', order: 2 }]), [1]);
+});
+
+const profile = () => ({
+  name: 'a',
+  headline: 'a',
+  pageTitle: 'a',
+  description: 'a',
+  interests: ['X', 'Y'],
+  tokens: [{ word: 'X', candidates: [{ text: 'a', p: 0.6 }, { text: 'b', p: 0.3 }] }],
+});
+
+test('プロフィール: 次トークン候補つきの正しいデータは通る', () => {
+  assert.equal(profileSchema.safeParse(profile()).success, true);
+});
+
+test('プロフィール: interests にない語の候補はエラー', () => {
+  const p = profile();
+  p.tokens[0].word = 'Z';
+  fails(profileSchema, p, 'tokens.0.word');
+});
+
+test('プロフィール: 候補の確率の合計が 1 を超えるとエラー', () => {
+  const p = profile();
+  p.tokens[0].candidates[0].p = 0.9;
+  fails(profileSchema, p, 'tokens.0.candidates');
+});
+
+test('稼働状況: 英語の文言が欠けるとエラー', () => {
+  const s = { order: 1, kind: 'running', updated: '2026-10-26', text: { ja: 'a' } };
+  fails(statusSchema, s, 'text.en');
+});
+
+test('稼働状況: 日付の形式と種別を検査する', () => {
+  const ok = { order: 1, kind: 'idle', updated: '2026-10-26', text: { ja: 'a', en: 'a' } };
+  assert.equal(statusSchema.safeParse(ok).success, true);
+  fails(statusSchema, { ...ok, updated: '2026-13-01' }, 'updated');
+  fails(statusSchema, { ...ok, kind: 'stopped' }, 'kind');
 });
