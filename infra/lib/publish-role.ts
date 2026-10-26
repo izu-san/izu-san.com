@@ -33,7 +33,7 @@ export class PublishRole extends Construct {
 
     this.role = new iam.Role(this, 'Role', {
       roleName: ROLE_NAMES.publish[props.name],
-      description: `izu-san.com ${props.name} の公開用（GitHub Actions、OIDC）`,
+      description: `Publish role for izu-san.com ${props.name} (GitHub Actions via OIDC)`,
       assumedBy: new iam.WebIdentityPrincipal(providerArn, {
         StringEquals: {
           [`${OIDC_PROVIDER_HOST}:aud`]: 'sts.amazonaws.com',

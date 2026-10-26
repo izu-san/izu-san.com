@@ -50,7 +50,7 @@ export class DeployerStack extends Stack {
     // 承認なしで走る diff 用。引き受けられるのは lookup ロール（読み取りのみ）だけ。
     const diffRole = new iam.Role(this, 'DiffRole', {
       roleName: ROLE_NAMES.diff,
-      description: 'cdk diff 用（読み取りのみ。Environment infra-diff）',
+      description: 'cdk diff (read-only, GitHub Environment infra-diff)',
       assumedBy: trustFor(DIFF_ENVIRONMENT),
     });
     diffRole.addToPolicy(
@@ -60,7 +60,7 @@ export class DeployerStack extends Stack {
     // 承認後の deploy 用。CDK の bootstrap ロールを引き受けるだけで、リソースを直接は変更しない。
     const deployRole = new iam.Role(this, 'DeployRole', {
       roleName: ROLE_NAMES.deploy,
-      description: 'cdk deploy 用（承認必須の Environment infra）',
+      description: 'cdk deploy (GitHub Environment infra, approval required)',
       assumedBy: trustFor(DEPLOY_ENVIRONMENT),
     });
     deployRole.addToPolicy(
@@ -74,7 +74,7 @@ export class DeployerStack extends Stack {
     const zoneArn = `arn:${this.partition}:route53:::hostedzone/${ZONE_ID}`;
     const executionPolicy = new iam.ManagedPolicy(this, 'CfnExecutionPolicy', {
       managedPolicyName: CFN_EXECUTION_POLICY_NAME,
-      description: 'izu-san.com の CloudFormation 実行用（cdk bootstrap に渡す）',
+      description: 'CloudFormation execution policy for izu-san.com (passed to cdk bootstrap)',
       statements: [
         new iam.PolicyStatement({
           sid: 'SiteServices',
