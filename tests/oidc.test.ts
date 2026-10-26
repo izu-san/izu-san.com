@@ -181,6 +181,10 @@ test('実行ポリシー: Route 53 の変更は条件キーで絞り、料金プ
   assert.ok(!actions.some((a) => /ApprovePaidSubscription|UpdateSubscription/.test(a)));
   assert.ok(!actions.includes('route53:*') && !actions.includes('iam:*') && !actions.includes('*'));
   assert.ok(actions.includes('pricingplanmanager:CancelSubscription'));
+  // bootstrap の版を読む権限は、そのパラメーター 1 つだけ。
+  const ssm = statements.find((s) => s.Sid === 'BootstrapVersion')!;
+  assert.equal(ssm.Action, 'ssm:GetParameters');
+  assert.equal(resolve(ssm.Resource), 'arn:aws:ssm:us-east-1:123456789012:parameter/cdk-bootstrap/hnb659fds/version');
   // IAM は公開用ロールだけ。
   const iamStatement = statements.find((s) => s.Sid === 'PublishRoles')!;
   assert.deepEqual(resolve(iamStatement.Resource), [
