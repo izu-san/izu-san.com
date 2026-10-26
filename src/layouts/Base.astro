@@ -4,10 +4,12 @@ import { languages, paths, type Lang } from '../lib/i18n.ts';
 interface Props {
   lang: Lang;
   title: string;
-  description: string;
+  description?: string;
+  /** 日英の alternate / canonical を出さない（404 用）。 */
+  noindex?: boolean;
 }
 
-const { lang, title, description } = Astro.props;
+const { lang, title, description, noindex = false } = Astro.props;
 const url = (l: Lang) => new URL(paths[l], Astro.site).href;
 ---
 
@@ -17,10 +19,16 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={url(lang)} />
-    {languages.map((l) => <link rel="alternate" hreflang={l} href={url(l)} />)}
-    <link rel="alternate" hreflang="x-default" href={url('ja')} />
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={url(lang)} />
+        {languages.map((l) => <link rel="alternate" hreflang={l} href={url(l)} />)}
+        <link rel="alternate" hreflang="x-default" href={url('ja')} />
+      </>
+    )}
   </head>
   <body>
     <slot />
