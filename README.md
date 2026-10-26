@@ -22,9 +22,17 @@ Personal portfolio site of Izu-san: profile, interests (AI-driven development, l
 
 ## 開発の始め方 / Getting started
 
-Astro の導入前のため、現時点で実行できるコマンドはありません。導入後に、依存関係の取得、開発サーバー、検証、ビルドの手順を追記します。
+Node.js 24.22.1（`.nvmrc`）と pnpm 12.15.0（`package.json` の `packageManager`）を使います。
 
-No runnable commands yet; setup, dev server, check and build instructions will be added once Astro is introduced.
+```bash
+pnpm install --frozen-lockfile  # 依存関係の取得 / install dependencies
+pnpm dev                        # 開発サーバー / dev server
+pnpm check                      # 型チェック / type check
+pnpm build                      # 静的ファイルを dist/ に生成 / build to dist/
+pnpm preview                    # ビルド結果の確認 / preview the build
+```
+
+Requires Node.js 24.22.1 (`.nvmrc`) and pnpm 12.15.0 (`packageManager` in `package.json`).
 
 ## ブランチ運用 / Branches
 
