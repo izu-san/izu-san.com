@@ -594,7 +594,7 @@ main {
   letter-spacing: 0.08em;
 }
 
-/* 承認欄: 連絡先を図面の「設計 / 照査 / 承認」欄にする */
+/* 承認欄: 連絡先を図面の「設計 / 審査 / 承認」欄にする */
 .approval {
   display: grid;
   border: 1px solid var(--rule);
