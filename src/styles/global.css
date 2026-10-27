@@ -1107,8 +1107,12 @@ button.factory-cell:hover {
 
 .work-detail .wrap {
   display: grid;
-  gap: 1.25rem;
-  max-width: 48rem;
+  gap: 2.5rem;
+}
+
+/* 本文は読みやすい幅に抑え、左端はヘッダー・フッターに揃える */
+.work-detail .wrap > * {
+  max-width: 56rem;
 }
 
 .work-crumb {
@@ -1116,12 +1120,188 @@ button.factory-cell:hover {
   font-size: 0.8125rem;
 }
 
+.work-hero {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 48rem) {
+  .work-hero:has(.work-figure) {
+    grid-template-columns: minmax(0, 1fr) 18rem;
+    gap: 2.5rem;
+  }
+}
+
+.work-intro {
+  display: grid;
+  gap: 1rem;
+}
+
 .work-kicker::before {
   content: none;
 }
 
-.work-detail .prose {
+.work-lead {
+  color: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+
+.work-figure,
+.diagram {
+  margin: 0;
+}
+
+.work-points dd {
+  margin: 0;
+}
+
+.work-figure {
+  border: 1px solid var(--rule);
+  padding: 0.5rem;
+}
+
+.work-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.work-credit {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+.work-section {
   display: grid;
   gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.work-section h2 {
+  font-size: 1.25rem;
+}
+
+.work-sec-no {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.work-section p {
   color: var(--text);
+  line-height: 1.85;
+}
+
+/* 要点: 罫線で区切った 2 列（ラベル・説明）。幅が狭いときは縦に積む */
+.work-points {
+  display: grid;
+  border-top: 1px solid var(--rule);
+}
+
+.work-points dt,
+.work-points dd {
+  padding-block: 0.75rem;
+}
+
+.work-points dt {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+  padding-bottom: 0;
+}
+
+.work-points dd {
+  color: var(--text);
+  line-height: 1.8;
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 40rem) {
+  .work-points {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+
+  .work-points dt {
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+}
+
+/* 構成図: 行ごとに箱を並べ、行の間に矢印を置く（HTML と CSS だけで、文字が小さくならない） */
+.diagram {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.diagram-rows {
+  display: grid;
+  gap: 1.75rem;
+  list-style: none;
+  padding: 0;
+}
+
+.diagram-row {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.diagram-row:not(:last-child)::after {
+  content: '↓';
+  position: absolute;
+  left: 50%;
+  bottom: -1.5rem;
+  translate: -50% 0;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  line-height: 1;
+}
+
+.diagram-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.diagram-nodes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.diagram-node {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--rule);
+}
+
+.diagram-name {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.diagram-note {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.diagram figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
 }

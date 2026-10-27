@@ -121,7 +121,7 @@ test('OGP の欠落・canonical の誤り・JSON-LD のメールアドレスを�
 });
 
 // 公開 URL のない作品の個別ページ（ZJS-20）
-function buildWithDetail(opts: { omitEn?: boolean; badCanonical?: boolean; noBack?: boolean } = {}) {
+function buildWithDetail(opts: { omitEn?: boolean; badCanonical?: boolean; noBack?: boolean; noChrome?: boolean; topNav?: boolean } = {}) {
   const dist = build({
     ja: page('ja', { extra: '<a href="/works/maidai/">MaidAI</a>' }),
     en: page('en', { extra: '<a href="/en/works/maidai/">MaidAI</a>' }),
@@ -129,6 +129,11 @@ function buildWithDetail(opts: { omitEn?: boolean; badCanonical?: boolean; noBac
       PROD_SITEMAP.replace('</urlset>', '') +
       '<url><loc>https://izu-san.com/works/maidai/</loc></url><url><loc>https://izu-san.com/en/works/maidai/</loc></url></urlset>',
   });
+  const chrome = (lang: 'ja' | 'en') =>
+    (opts.topNav
+      ? `<nav class="site-nav"><a href="${lang === 'ja' ? '/' : '/en/'}#works">works</a></nav>`
+      : '<nav class="site-nav"><a href="#sec-0">a</a><a href="#sec-1">b</a></nav><section id="sec-0"></section><section id="sec-1"></section>') +
+    '<a href="https://developers.cloudflare.com/web-analytics/about/">analytics</a>';
   const detail = (lang: 'ja' | 'en') => {
     const path = (l: string) => (l === 'ja' ? '/works/maidai/' : '/en/works/maidai/');
     const other = lang === 'ja' ? 'en' : 'ja';
@@ -138,7 +143,7 @@ function buildWithDetail(opts: { omitEn?: boolean; badCanonical?: boolean; noBac
       `<link rel="alternate" hreflang="ja" href="https://izu-san.com/works/maidai/"><link rel="alternate" hreflang="en" href="https://izu-san.com/en/works/maidai/">` +
       `<link rel="alternate" hreflang="x-default" href="https://izu-san.com/works/maidai/">` +
       `<meta property="og:title" content="x"><meta property="og:url" content="https://izu-san.com${path(lang)}"></head>` +
-      `<body><a href="${opts.noBack ? '/' : lang === 'ja' ? '/#works' : '/en/#works'}">back</a><a href="${path(other)}">switch</a><h1>MaidAI</h1></body></html>`
+      `<body><a class="work-crumb" href="${opts.noBack ? '/' : lang === 'ja' ? '/#works' : '/en/#works'}">back</a><a href="${path(other)}">switch</a><h1>MaidAI</h1>${opts.noChrome ? '' : chrome(lang)}</body></html>`
     );
   };
   mkdirSync(join(dist, 'works/maidai'), { recursive: true });
@@ -158,4 +163,14 @@ test('個別ページ: 英語版の欠落・canonical の誤り・戻りリン�
   assert.ok(verifyDist(buildWithDetail({ omitEn: true }), 'production').some((e) => e.includes('en/works/maidai/index.html がない')));
   assert.ok(verifyDist(buildWithDetail({ badCanonical: true }), 'production').some((e) => e.includes('canonical')));
   assert.ok(verifyDist(buildWithDetail({ noBack: true }), 'production').some((e) => e.includes('戻りリンク')));
+});
+
+test('個別ページ: ナビがなく、解析の説明もなければ検出する', () => {
+  const errors = verifyDist(buildWithDetail({ noChrome: true }), 'production');
+  assert.ok(errors.some((e) => e.includes('ヘッダーのナビがない')));
+  assert.ok(errors.some((e) => e.includes('解析サービスの説明')));
+});
+
+test('個別ページ: ナビがトップのセクションへ向いていれば検出する', () => {
+  assert.ok(verifyDist(buildWithDetail({ topNav: true }), 'production').some((e) => e.includes('ページ内の節（#sec-N）でない')));
 });
