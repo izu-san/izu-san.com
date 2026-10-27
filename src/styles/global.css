@@ -267,6 +267,15 @@ main {
   }
 }
 
+.avatar {
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--rule);
+  object-fit: cover;
+}
+
 .name-dim {
   display: inline-block;
   max-width: 100%;

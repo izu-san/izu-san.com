@@ -22,6 +22,7 @@ export const profileSchema = z
     headline: text,
     pageTitle: text,
     description: text,
+    avatarAlt: text,
     interests: z.array(text).min(1),
     tokens: z.array(tokenAnnotation).optional(),
   })
@@ -54,7 +55,7 @@ export const createWorkSchema = (image: z.ZodType) =>
     .strictObject({
       order,
       tech: z.array(text).min(1),
-      url: z.httpUrl(),
+      url: z.httpUrl().optional(),
       image: image.optional(),
       ja: workCopy,
       en: workCopy,

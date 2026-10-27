@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import avatar from '../assets/avatar.png';
 import Base from '../layouts/Base.astro';
 import ExtLink from './ExtLink.astro';
 import FactoryPuzzle from './FactoryPuzzle.astro';
@@ -41,6 +43,17 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
         <div class="titleblock">
           <p class="tb-label" aria-hidden="true"><span>DWG-001</span><span>REV A</span></p>
           <div class="tb-body">
+            <Image
+              class="avatar"
+              src={avatar}
+              alt={profile.data.avatarAlt}
+              widths={[96, 192]}
+              sizes="96px"
+              width={96}
+              height={96}
+              format="webp"
+              loading="eager"
+            />
             <div class="name-dim">
               <h1 id="profile-h">{profile.data.name}</h1>
               <div class="dim" aria-hidden="true"><span>1:1</span></div>
@@ -97,7 +110,9 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
         <ul class="panels">
           {works.map((w, i) => (
             <li class="panel reveal" style={`--i: ${i}`}>
-              <h3 class="panel-title"><ExtLink class="panel-link" href={w.url} lang={lang}>{w.copy.name}</ExtLink></h3>
+              <h3 class="panel-title">
+                {w.url ? <ExtLink class="panel-link" href={w.url} lang={lang}>{w.copy.name}</ExtLink> : w.copy.name}
+              </h3>
               <p class="panel-body">{w.copy.summary}</p>
               <div class="recipe">
                 <p class="sr-only">{t.tech}:</p>

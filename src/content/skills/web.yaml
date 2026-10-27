@@ -1,9 +1,17 @@
-order: 2
+order: 3
 label:
   ja: Web 開発
   en: Web development
 items:
   - name: TypeScript
     usage:
-      ja: （仮データ）個人開発で利用しています。
-      en: (Placeholder) Used in personal projects.
+      ja: このサイトと AWS CDK のコードを書いています。
+      en: Used for this site and its AWS CDK code.
+  - name: Astro
+    usage:
+      ja: このサイトを静的サイトとして作っています。
+      en: Builds this site as a static site.
+  - name: JavaScript
+    usage:
+      ja: Chrome 拡張「X AIポスト非表示」を作っています。
+      en: Used for the Chrome extension X AI Post Hider.

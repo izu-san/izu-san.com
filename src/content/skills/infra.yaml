@@ -1,0 +1,17 @@
+order: 4
+label:
+  ja: インフラ・運用
+  en: Infrastructure and operations
+items:
+  - name: AWS CDK
+    usage:
+      ja: S3、CloudFront、ACM などの構成をコードで管理しています。
+      en: Manages the S3, CloudFront and ACM setup as code.
+  - name: GitHub Actions
+    usage:
+      ja: このサイトの検証と公開に使っています。
+      en: Used to verify and publish this site.
+  - name: Docker
+    usage:
+      ja: 自宅のサーバーで GitLab や YouTrack を compose で動かしています。
+      en: Runs GitLab and YouTrack with Compose on my home server.

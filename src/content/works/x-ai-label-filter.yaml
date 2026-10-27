@@ -1,0 +1,13 @@
+order: 4
+tech:
+  - JavaScript
+  - Chrome 拡張
+  - Python
+  - Docker
+url: https://github.com/izu-san/x-ai-label-filter
+ja:
+  name: X AIポスト非表示
+  summary: X の投稿のうち、「AI で生成」ラベルや AI 画像関連のタグがあるものを非表示にする非公式の Chrome 拡張です。ローカルの仲介サーバーを使う判定は、初期設定ではオフにしています。
+en:
+  name: X AI Post Hider
+  summary: An unofficial Chrome extension that hides X posts carrying a "Made with AI" label or AI-image hashtags. Checks that use a local relay server are off by default.

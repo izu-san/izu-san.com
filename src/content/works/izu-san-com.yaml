@@ -1,0 +1,14 @@
+order: 1
+tech:
+  - Astro
+  - TypeScript
+  - AWS CDK
+  - YouTrack
+  - GitHub Actions
+url: https://github.com/izu-san/izu-san.com
+ja:
+  name: izu-san.com（このサイト）
+  summary: 仕様書とチケットを YouTrack で管理し、AI エージェントと進めているポートフォリオサイトです。Astro の静的サイトを S3 と CloudFront で配信し、AWS の構成も CDK のコードで管理しています。
+en:
+  name: izu-san.com (this site)
+  summary: A portfolio site built with AI agents, with its spec and tickets managed in YouTrack. A static Astro site served from S3 and CloudFront, with the AWS setup also managed as CDK code.
