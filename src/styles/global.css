@@ -848,12 +848,17 @@ main {
   line-height: 1.7;
 }
 
-/* メールのコピー: パネル全体のリンクより前に出す */
+/* メールのコピー: パネル全体のリンクより前に出す。結果は同じ行に出し、空でも高さを増やさない */
+.copy-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .copy-button {
   position: relative;
   z-index: 2;
-  align-self: flex-start;
-  margin-top: 0.75rem;
   padding: 0.25rem 0.75rem;
   border: 1px solid var(--rule);
   background: transparent;
@@ -869,11 +874,9 @@ main {
 }
 
 .copy-status {
-  margin-top: 0.375rem;
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  min-height: 1rem;
 }
 
 /* ミニ工場パズル（フッターの隠し要素） */

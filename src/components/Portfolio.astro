@@ -272,7 +272,11 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
             status.textContent = '';
           }
         });
-        panel.append(button, status);
+        // ボタンと結果を同じ行に置く（結果が空でもカードの高さが変わらない）。
+        const row = document.createElement('div');
+        row.className = 'copy-row';
+        row.append(button, status);
+        panel.append(row);
       }
     }
 
