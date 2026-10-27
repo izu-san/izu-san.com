@@ -19,7 +19,8 @@
     "cdk": "cdk",
     "synth": "cdk synth",
     "diff": "cdk diff",
-    "deployer:apply": "node infra/scripts/apply-deployer.ts"
+    "deployer:apply": "node infra/scripts/apply-deployer.ts",
+    "cost:apply": "node infra/scripts/apply-deployer.ts IzuSanCost"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
