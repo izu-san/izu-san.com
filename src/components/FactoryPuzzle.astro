@@ -1,5 +1,7 @@
 ---
-import { ui, type Lang } from '../lib/i18n.ts';
+import { getCollection } from 'astro:content';
+import { STAGES, validateStages } from '../lib/factory.ts';
+import { ui, workPath, type Lang } from '../lib/i18n.ts';
 import ExtLink from './ExtLink.astro';
 
 interface Props {
@@ -9,88 +11,234 @@ interface Props {
 
 const { lang, links } = Astro.props;
 const f = ui[lang].factory;
+
+// 注文の素材は作品の使用技術から選ぶ。食い違いはビルドエラーにする。
+const works = await getCollection('works');
+const errors = validateStages(STAGES, works.map((w) => ({ id: w.id, tech: w.data.tech })));
+if (errors.length) throw new Error(`ミニ工場のステージが正しくありません:\n${errors.join('\n')}`);
+
+const stages = STAGES.map((stage) => {
+  const work = works.find((w) => w.id === stage.order.workId)!;
+  return {
+    ...stage,
+    work: {
+      name: work.data[lang].name,
+      summary: work.data[lang].summary,
+      href: work.data.url ?? workPath(lang, work.id),
+      external: Boolean(work.data.url),
+    },
+  };
+});
+const strings = { ...f, newTab: ui[lang].newTab, separator: lang === 'ja' ? '、' : ', ' };
 ---
 
 <details class="factory">
   <summary>{f.summary}</summary>
-  <div class="factory-body" data-factory data-strings={JSON.stringify(f)}>
+  <div class="factory-body" data-factory data-strings={JSON.stringify(strings)} data-stages={JSON.stringify(stages)}>
     <p>{f.intro}</p>
     <noscript><p>{f.noscript}</p></noscript>
+    <div class="factory-stages" role="group" aria-label={f.stageGroup}></div>
+    <p class="factory-order"></p>
+    <ul class="factory-legend"></ul>
     <div class="factory-board" role="group" aria-label={f.boardLabel}></div>
     <p class="factory-actions">
       <button type="button" data-run>{f.run}</button>
       <button type="button" data-reset>{f.reset}</button>
     </p>
     <p class="factory-status" role="status" aria-live="polite"></p>
+    <div class="factory-delivery" hidden>
+      <p>{f.delivered}</p>
+      <p class="factory-work"></p>
+      <p class="factory-score"></p>
+      <button type="button" data-next>{f.next}</button>
+    </div>
     <div class="factory-reward" hidden>
       <p>{f.clear}</p>
       <ul>
         {links.map((l) => <li><ExtLink href={l.url} lang={lang}>{l.label}</ExtLink></li>)}
       </ul>
     </div>
+    <p class="factory-storage">
+      {f.storage}
+      <button type="button" data-clear-records>{f.clearRecords}</button>
+    </p>
   </div>
 </details>
 
 <script>
-  import { DELTAS, LAYOUT, SIZE, emptyBelts, simulate } from '../lib/factory.ts';
+  import {
+    DELTAS,
+    STORAGE_KEY,
+    beltCount,
+    colsOf,
+    emptyBelts,
+    isSource,
+    parseRecords,
+    recordClear,
+    rowsOf,
+    simulate,
+    type Pos,
+    type Records,
+    type Stage,
+  } from '../lib/factory.ts';
+
+  interface StageData extends Stage {
+    work: { name: string; summary: string; href: string; external: boolean };
+  }
 
   const root = document.querySelector<HTMLElement>('[data-factory]');
   if (root) {
     const s = JSON.parse(root.dataset.strings!);
-    const board = root.querySelector<HTMLElement>('.factory-board')!;
-    const status = root.querySelector<HTMLElement>('.factory-status')!;
-    const reward = root.querySelector<HTMLElement>('.factory-reward')!;
-    const runButton = root.querySelector<HTMLButtonElement>('[data-run]')!;
+    const stages: StageData[] = JSON.parse(root.dataset.stages!);
+    const q = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
+    const stageBar = q('.factory-stages');
+    const order = q('.factory-order');
+    const legend = q('.factory-legend');
+    const board = q('.factory-board');
+    const status = q('.factory-status');
+    const delivery = q('.factory-delivery');
+    const work = q('.factory-work');
+    const score = q('.factory-score');
+    const nextButton = q<HTMLButtonElement>('[data-next]');
+    const reward = q('.factory-reward');
+    const runButton = q<HTMLButtonElement>('[data-run]');
     const glyphs = ['', '→', '↓', '←', '↑'];
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const belts = emptyBelts();
-    const cells: (HTMLElement | null)[][] = [];
+    const fill = (template: string, values: Record<string, string | number>) =>
+      Object.entries(values).reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), template);
+
+    // 記録はブラウザー内（localStorage）だけに置く。使えない環境では、記録せずに遊べる。
+    const load = (): Records => {
+      try {
+        return parseRecords(localStorage.getItem(STORAGE_KEY), stages);
+      } catch {
+        return {};
+      }
+    };
+    const save = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch {
+        // 保存できなくても、遊ぶのには影響しない。
+      }
+    };
+    let records = load();
+
+    let index = 0;
+    let stage: StageData = stages[0];
+    let belts: number[][] = [];
+    let cells: (HTMLElement | null)[][] = [];
     let timer = 0;
 
+    const allCleared = () => stages.every((st) => records[st.id] !== undefined);
+
     const label = (r: number, c: number) =>
-      s.cell.replace('{r}', String(r + 1)).replace('{c}', String(c + 1)).replace('{d}', s.dirs[belts[r][c]]);
+      fill(s.cell, { r: r + 1, c: c + 1, d: s.dirs[belts[r][c]] });
 
     const clearMarks = () => {
       clearTimeout(timer);
       runButton.disabled = false;
       for (const row of cells) for (const el of row) el?.removeAttribute('data-mark');
       status.textContent = '';
+      delivery.hidden = true;
       reward.hidden = true;
     };
 
-    const first = { r: -1, c: -1 };
-    for (let r = 0; r < SIZE; r++) {
-      cells.push([]);
-      for (let c = 0; c < SIZE; c++) {
-        const kind = LAYOUT[r][c];
-        let el: HTMLElement;
-        if (kind === '.') {
+    const renderStageButtons = () => {
+      stageBar.replaceChildren(
+        ...stages.map((st, i) => {
           const button = document.createElement('button');
           button.type = 'button';
-          button.className = 'factory-cell';
-          button.dataset.r = String(r);
-          button.dataset.c = String(c);
-          button.tabIndex = first.r < 0 ? 0 : -1;
-          if (first.r < 0) Object.assign(first, { r, c });
-          button.setAttribute('aria-label', label(r, c));
-          button.addEventListener('click', () => {
-            belts[r][c] = (belts[r][c] + 1) % DELTAS.length;
-            button.textContent = glyphs[belts[r][c]];
-            button.setAttribute('aria-label', label(r, c));
-            clearMarks();
-          });
-          el = button;
-        } else {
-          el = document.createElement('div');
-          el.className = `factory-cell factory-${kind === '#' ? 'wall' : kind === 'S' ? 'source' : 'goal'}`;
-          el.setAttribute('role', 'img');
-          el.setAttribute('aria-label', kind === '#' ? s.wall : kind === 'S' ? s.source : s.goal);
-          if (kind !== '#') el.textContent = kind === 'S' ? 'IN' : 'OUT';
-        }
-        cells[r].push(el);
-        board.append(el);
+          const cleared = records[st.id] !== undefined;
+          const name = fill(s.stage, { n: i + 1 });
+          button.textContent = cleared ? `${i + 1} ✓` : String(i + 1);
+          button.setAttribute('aria-label', cleared ? `${name}（${s.stageCleared}）` : name);
+          button.setAttribute('aria-pressed', String(i === index));
+          button.addEventListener('click', () => open(i));
+          return button;
+        }),
+      );
+    };
+
+    const renderInfo = () => {
+      const needs = stage.order.needs.join(s.separator);
+      order.textContent = fill(s.order, { m: needs });
+      const items = stage.sources.map((material, i) => {
+        const li = document.createElement('li');
+        li.textContent = fill(s.sourceNote, { k: i + 1, m: material });
+        return li;
+      });
+      if (stage.layout.some((row) => row.includes('M'))) {
+        const li = document.createElement('li');
+        li.textContent = s.machineNote;
+        items.push(li);
       }
-    }
+      legend.replaceChildren(...items);
+    };
+
+    const buildBoard = () => {
+      belts = emptyBelts(stage);
+      cells = [];
+      board.replaceChildren();
+      board.style.setProperty('--cols', String(colsOf(stage)));
+      board.setAttribute('aria-label', `${s.boardLabel}（${fill(s.stage, { n: index + 1 })}）`);
+      let focusable = false;
+      for (let r = 0; r < rowsOf(stage); r++) {
+        cells.push([]);
+        for (let c = 0; c < colsOf(stage); c++) {
+          const kind = stage.layout[r][c];
+          let el: HTMLElement;
+          if (kind === '.') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'factory-cell';
+            button.dataset.r = String(r);
+            button.dataset.c = String(c);
+            button.tabIndex = focusable ? -1 : 0;
+            focusable = true;
+            button.setAttribute('aria-label', label(r, c));
+            button.addEventListener('click', () => {
+              belts[r][c] = (belts[r][c] + 1) % DELTAS.length;
+              button.textContent = glyphs[belts[r][c]];
+              button.setAttribute('aria-label', label(r, c));
+              clearMarks();
+            });
+            el = button;
+          } else {
+            el = document.createElement('div');
+            el.setAttribute('role', 'img');
+            if (kind === '#') {
+              el.className = 'factory-cell factory-wall';
+              el.setAttribute('aria-label', s.wall);
+            } else if (kind === 'M') {
+              el.className = 'factory-cell factory-machine';
+              el.setAttribute('aria-label', s.machine);
+              el.textContent = 'MIX';
+            } else if (kind === 'G') {
+              el.className = 'factory-cell factory-goal';
+              el.setAttribute('aria-label', fill(s.goalLabel, { m: stage.order.needs.join(s.separator) }));
+              el.textContent = 'OUT';
+            } else if (isSource(kind)) {
+              const k = Number(kind);
+              el.className = 'factory-cell factory-source';
+              el.setAttribute('aria-label', fill(s.sourceLabel, { k, m: stage.sources[k - 1] }));
+              el.textContent = `IN${k}`;
+            }
+          }
+          cells[r].push(el);
+          board.append(el);
+        }
+      }
+    };
+
+    const open = (i: number) => {
+      index = i;
+      stage = stages[i];
+      clearMarks();
+      renderStageButtons();
+      renderInfo();
+      buildBoard();
+    };
 
     // 矢印キーでマス間を移動する（フォーカスが当たるのは 1 マスだけ）。
     board.addEventListener('keydown', (e) => {
@@ -101,7 +249,7 @@ const f = ui[lang].factory;
       e.preventDefault();
       let r = Number(target.dataset.r) + dir[0];
       let c = Number(target.dataset.c) + dir[1];
-      while (r >= 0 && r < SIZE && c >= 0 && c < SIZE) {
+      while (r >= 0 && r < rowsOf(stage) && c >= 0 && c < colsOf(stage)) {
         const next = cells[r][c];
         if (next instanceof HTMLButtonElement) {
           target.tabIndex = -1;
@@ -114,45 +262,78 @@ const f = ui[lang].factory;
       }
     });
 
+    const deliver = (): string => {
+      const count = beltCount(belts);
+      const { records: next, improved } = recordClear(records, stage.id, count);
+      records = next;
+      if (improved) save();
+      renderStageButtons();
+
+      const link = document.createElement('a');
+      link.href = stage.work.href;
+      link.textContent = stage.work.name;
+      if (stage.work.external) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        const hint = document.createElement('span');
+        hint.className = 'sr-only';
+        hint.textContent = s.newTab;
+        link.append(hint);
+      }
+      const strong = document.createElement('strong');
+      strong.append(link);
+      work.replaceChildren(strong, ` — ${stage.work.summary}`);
+
+      const text = [fill(s.belts, { n: count }), fill(s.best, { n: records[stage.id] })];
+      if (improved) text.push(s.newBest);
+      score.textContent = text.join(' / ');
+      nextButton.hidden = index >= stages.length - 1;
+      delivery.hidden = false;
+      reward.hidden = !allCleared();
+      return text.join(' / ');
+    };
+
     runButton.addEventListener('click', () => {
       clearMarks();
-      const { path, result } = simulate(belts);
+      const { tracks, result } = simulate(stage, belts);
+      const frames: Pos[] = tracks.flatMap((t) => t.path);
       const finish = () => {
         status.textContent = s.results[result];
-        reward.hidden = result !== 'goal';
+        if (result === 'goal') status.textContent += ` ${deliver()}`;
         runButton.disabled = false;
       };
       if (reduced) {
-        for (const [r, c] of path) cells[r][c]?.setAttribute('data-mark', 'path');
+        for (const [r, c] of frames) cells[r][c]?.setAttribute('data-mark', 'path');
         finish();
         return;
       }
       runButton.disabled = true;
       let i = 0;
       const step = () => {
-        if (i > 0) cells[path[i - 1][0]][path[i - 1][1]]?.setAttribute('data-mark', 'path');
-        if (i >= path.length) return finish();
-        cells[path[i][0]][path[i][1]]?.setAttribute('data-mark', 'item');
+        if (i > 0) cells[frames[i - 1][0]][frames[i - 1][1]]?.setAttribute('data-mark', 'path');
+        if (i >= frames.length) return finish();
+        cells[frames[i][0]][frames[i][1]]?.setAttribute('data-mark', 'item');
         i += 1;
         timer = window.setTimeout(step, 220);
       };
       step();
     });
 
-    root.querySelector('[data-reset]')!.addEventListener('click', () => {
-      for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
-          belts[r][c] = 0;
-          const el = cells[r][c];
-          if (el instanceof HTMLButtonElement) {
-            el.textContent = '';
-            el.setAttribute('aria-label', label(r, c));
-          }
-        }
-      }
-      clearMarks();
+    q('[data-reset]').addEventListener('click', () => open(index));
+
+    nextButton.addEventListener('click', () => {
+      open(index + 1);
+      board.querySelector<HTMLElement>('button[tabindex="0"]')?.focus();
     });
 
+    q('[data-clear-records]').addEventListener('click', () => {
+      records = {};
+      save();
+      open(index);
+      status.textContent = s.recordsCleared;
+    });
+
+    open(0);
     root.classList.add('ready');
   }
 </script>
