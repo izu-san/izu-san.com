@@ -601,6 +601,9 @@ main {
   list-style: none;
   text-decoration: underline dotted var(--accent);
   text-underline-offset: 0.3em;
+  /* タッチ対象を 24px 以上にする（WCAG 2.2 の 2.5.8）。マイナスのマージンで行の並びは変えない。 */
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
 }
 
 .token summary::-webkit-details-marker {
@@ -890,6 +893,8 @@ main {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: var(--accent);
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
 }
 
 .factory-body {
