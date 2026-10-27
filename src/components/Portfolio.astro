@@ -21,7 +21,16 @@ const buildDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).f
 const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word === word);
 ---
 
-<Base lang={lang} title={profile.data.pageTitle} description={profile.data.description}>
+<Base
+  lang={lang}
+  title={profile.data.pageTitle}
+  description={profile.data.description}
+  share={{
+    name: profile.data.name,
+    imageAlt: `${profile.data.name} — ${profile.data.headline}`,
+    sameAs: links.filter((l) => l.url.startsWith('https://')).map((l) => l.url),
+  }}
+>
   <a class="skip-link" href="#main">{t.skip}</a>
 
   <header class="site-header">
@@ -194,6 +203,10 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
     <div class="wrap">
       <FactoryPuzzle lang={lang} links={links} />
       <p>{t.footer}</p>
+      <p class="colophon">
+        {t.analytics.text}
+        <ExtLink href="https://developers.cloudflare.com/web-analytics/about/" lang={lang}>{t.analytics.link}</ExtLink>
+      </p>
       <p class="colophon">
         {t.colophon.built}<br />
         {t.colophon.fonts}<br />
