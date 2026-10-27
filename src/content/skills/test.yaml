@@ -1,0 +1,13 @@
+order: 2
+label:
+  ja: テスト自動化
+  en: Test automation
+items:
+  - name: Playwright
+    usage:
+      ja: Web・スマートフォン・PC アプリの E2E テストの自動化に使っています。
+      en: Used to automate E2E tests for web, smartphone and desktop apps.
+  - name: Python
+    usage:
+      ja: HDD の性能テスト、CLI を使った QA テスト、REST API のテストの自動化に使ってきました。
+      en: Has been used to automate HDD performance tests, CLI-driven QA tests and REST API tests.

@@ -1,0 +1,8 @@
+order: 2
+start: "2025-04"
+field:
+  ja: E2E テスト自動化・AI 活用推進
+  en: E2E test automation and AI adoption
+description:
+  ja: Web システム、スマートフォンアプリ、PC アプリの E2E テストを自動化しています。あわせて、AI 活用の推進に取り組んでいます。
+  en: Automating E2E tests for web systems, smartphone apps and desktop apps, and promoting the use of AI.

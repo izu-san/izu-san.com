@@ -1,0 +1,11 @@
+order: 3
+tech:
+  - Python
+  - Electron
+  - ローカル LLM
+ja:
+  name: MaidAI
+  summary: ローカル LLM で動く、会話 AI「梨乃」を常駐させるデスクトップクライアントです。会話、音声、生活通知をつなぎ、操作は承認と監査を通す設計にしています。個人利用のため、公開リポジトリはありません。
+en:
+  name: MaidAI
+  summary: A desktop client that keeps a conversational AI character, Rino, running on a local LLM. It connects chat, voice and daily-life notifications, and routes actions through approval and audit. Built for personal use, so there is no public repository.
