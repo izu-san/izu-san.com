@@ -119,3 +119,43 @@ test('OGP の欠落・canonical の誤り・JSON-LD のメールアドレスを�
   const mail = page('en').replace('{"@type":"Person"}', '{"email":"mailto:a@b.c"}');
   assert.match(verifyDist(build({ en: mail }), 'production').join('\n'), /JSON-LD にメールアドレス/);
 });
+
+// 公開 URL のない作品の個別ページ（ZJS-20）
+function buildWithDetail(opts: { omitEn?: boolean; badCanonical?: boolean; noBack?: boolean } = {}) {
+  const dist = build({
+    ja: page('ja', { extra: '<a href="/works/maidai/">MaidAI</a>' }),
+    en: page('en', { extra: '<a href="/en/works/maidai/">MaidAI</a>' }),
+    sitemap:
+      PROD_SITEMAP.replace('</urlset>', '') +
+      '<url><loc>https://izu-san.com/works/maidai/</loc></url><url><loc>https://izu-san.com/en/works/maidai/</loc></url></urlset>',
+  });
+  const detail = (lang: 'ja' | 'en') => {
+    const path = (l: string) => (l === 'ja' ? '/works/maidai/' : '/en/works/maidai/');
+    const other = lang === 'ja' ? 'en' : 'ja';
+    const canonical = opts.badCanonical ? 'https://izu-san.com/' : `https://izu-san.com${path(lang)}`;
+    return (
+      `<!doctype html><html lang="${lang}"><head><link rel="canonical" href="${canonical}">` +
+      `<link rel="alternate" hreflang="ja" href="https://izu-san.com/works/maidai/"><link rel="alternate" hreflang="en" href="https://izu-san.com/en/works/maidai/">` +
+      `<link rel="alternate" hreflang="x-default" href="https://izu-san.com/works/maidai/">` +
+      `<meta property="og:title" content="x"><meta property="og:url" content="https://izu-san.com${path(lang)}"></head>` +
+      `<body><a href="${opts.noBack ? '/' : lang === 'ja' ? '/#works' : '/en/#works'}">back</a><a href="${path(other)}">switch</a><h1>MaidAI</h1></body></html>`
+    );
+  };
+  mkdirSync(join(dist, 'works/maidai'), { recursive: true });
+  writeFileSync(join(dist, 'works/maidai/index.html'), detail('ja'));
+  if (!opts.omitEn) {
+    mkdirSync(join(dist, 'en/works/maidai'), { recursive: true });
+    writeFileSync(join(dist, 'en/works/maidai/index.html'), detail('en'));
+  }
+  return dist;
+}
+
+test('個別ページ: 正しい本番ビルドは合格する', () => {
+  assert.deepEqual(verifyDist(buildWithDetail(), 'production'), []);
+});
+
+test('個別ページ: 英語版の欠落・canonical の誤り・戻りリンクの欠落を検出する', () => {
+  assert.ok(verifyDist(buildWithDetail({ omitEn: true }), 'production').some((e) => e.includes('en/works/maidai/index.html がない')));
+  assert.ok(verifyDist(buildWithDetail({ badCanonical: true }), 'production').some((e) => e.includes('canonical')));
+  assert.ok(verifyDist(buildWithDetail({ noBack: true }), 'production').some((e) => e.includes('戻りリンク')));
+});

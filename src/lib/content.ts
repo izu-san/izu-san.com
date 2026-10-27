@@ -38,3 +38,9 @@ export async function loadSiteContent(lang: Lang) {
     links: links.map(({ id, data }) => ({ id, ...data })),
   };
 }
+
+/** 公開 URL のない作品（個別ページを持つ作品）。 */
+export async function loadWorkDetails() {
+  const works = sorted('works', await getCollection('works'));
+  return works.filter(({ data }) => !data.url);
+}

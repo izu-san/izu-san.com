@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadSiteContent } from '../lib/content.ts';
+import { languages, otherLang, paths, ui, workPath, type Lang } from '../lib/i18n.ts';
+
+interface Props {
+  lang: Lang;
+  id: string;
+}
+
+const { lang, id } = Astro.props;
+const t = ui[lang];
+const other = otherLang(lang);
+const { profile, works } = await loadSiteContent(lang);
+const work = works.find((w) => w.id === id)!;
+const detail = work.copy.detail ?? [];
+const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)])) as Record<Lang, string>;
+---
+
+<Base
+  lang={lang}
+  title={`${work.copy.name} | ${profile.data.name}`}
+  description={work.copy.summary}
+  pagePaths={pagePaths}
+  share={{ name: profile.data.name, imageAlt: `${profile.data.name} — ${profile.data.headline}` }}
+>
+  <a class="skip-link" href="#main">{ui[lang].skip}</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-brand" href={`${paths[lang]}#works`}>
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="site-name">{profile.data.name}</span>
+        <span class="brand-sub" aria-hidden="true">IZU-SAN / PORTFOLIO</span>
+      </a>
+      <p class="lang-switch" role="group" aria-label={t.switchLabel}>
+        <span class="lang-current" lang={lang} aria-current="true">{lang.toUpperCase()}</span>
+        <a id="lang-switch" href={pagePaths[other]} hreflang={other} lang={other} aria-label={t.switchText}>{other.toUpperCase()}</a>
+      </p>
+    </div>
+  </header>
+
+  <main id="main" class="work-detail">
+    <div class="wrap">
+      <p class="work-crumb"><a href={`${paths[lang]}#works`}>← {t.work.back}</a></p>
+      <p class="section-title work-kicker">{t.work.navLabel}</p>
+      <h1>{work.copy.name}</h1>
+      <div class="prose">
+        {detail.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+      <div class="recipe">
+        <p class="sr-only">{t.tech}:</p>
+        <ul class="recipe-in">
+          {work.tech.map((name) => <li>{name}</li>)}
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><a href={`${paths[lang]}#works`}>{t.work.back}</a></p>
+      <p>{t.footer}</p>
+    </div>
+  </footer>
+</Base>
