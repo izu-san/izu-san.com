@@ -1,0 +1,84 @@
+name: rollback
+
+# 保管済みの成果物を、コミット ID を指定して再公開する（再ビルドしない。仕様書 §9.3）。
+# 起動した参照の環境へ公開する（main は本番、preview はプレビュー）。
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 再公開するコミット ID（40 桁）。releases/<環境>/<コミット ID>/ に保管済みのもの
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# 公開と同じグループにして、環境ごとに直列化する。
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  rollback:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SITE_ENV: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+      COMMIT: ${{ inputs.commit }}
+    steps:
+      - name: コミット ID の形式
+        run: echo "$COMMIT" | grep -Eq '^[0-9a-f]{40}$' || { echo "::error::コミット ID は 40 桁の 16 進数で指定する"; exit 1; }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 公開先の設定
+        run: |
+          case "$SITE_ENV" in
+            production)
+              {
+                echo "SITE_BUCKET=${{ vars.PRODUCTION_SITE_BUCKET }}"
+                echo "DISTRIBUTION_ID=${{ vars.PRODUCTION_DISTRIBUTION_ID }}"
+                echo "CHECK_HOST=${{ vars.PRODUCTION_DISTRIBUTION_DOMAIN }}"
+              } >> "$GITHUB_ENV" ;;
+            preview)
+              {
+                echo "SITE_BUCKET=${{ vars.PREVIEW_SITE_BUCKET }}"
+                echo "DISTRIBUTION_ID=${{ vars.PREVIEW_DISTRIBUTION_ID }}"
+                echo "CHECK_HOST=${{ vars.PREVIEW_DISTRIBUTION_DOMAIN }}"
+              } >> "$GITHUB_ENV" ;;
+          esac
+          echo "RELEASES_BUCKET=${{ vars.RELEASES_BUCKET }}" >> "$GITHUB_ENV"
+      - name: 設定の確認
+        run: |
+          for name in SITE_BUCKET DISTRIBUTION_ID CHECK_HOST RELEASES_BUCKET; do
+            [ -n "${!name}" ] || { echo "::error::Actions の変数 ${name}（${SITE_ENV}）が未設定"; exit 1; }
+          done
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/izu-san-publish-${{ env.SITE_ENV }}
+          aws-region: us-east-1
+      - name: 再公開
+        id: rollback
+        run: scripts/publish.sh rollback "$COMMIT"
+        env:
+          PREVIEW_BASIC_AUTH: ${{ secrets.PREVIEW_BASIC_AUTH }}
+      - name: 記録
+        if: always()
+        run: |
+          {
+            echo "## ロールバック（${SITE_ENV}）"
+            echo
+            echo "| 項目 | 内容 |"
+            echo "| --- | --- |"
+            echo "| 再公開したコミット | \`${COMMIT}\` |"
+            echo "| 起動したコミット（スクリプトの版） | \`${GITHUB_SHA}\` |"
+            echo "| 日時 | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| 結果 | ${{ steps.rollback.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

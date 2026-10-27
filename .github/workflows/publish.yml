@@ -1,0 +1,116 @@
+name: publish
+
+# main への push で本番、preview への push でプレビューを公開する（仕様書 §9.2）。
+# 検証 → ビルド → 主要表示の検証 → AWS ロールの引き受け → 公開。検証に失敗したら AWS には触れない。
+# 本番は、本番の Alias を作る（ZJS-14）まで外部に向かない（確認は *.cloudfront.net で行う）。
+on:
+  push:
+    branches: [main, preview]
+  # 手動起動は、公開の失敗と自動復旧の確認用（simulate_failure）。起動した参照の環境へ公開する。
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: 配置の後に意図的に失敗させ、直前の成功版が再公開されることを確認する
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# 環境ごとに直列化する。進行中の公開は途中でキャンセルしない（S3 への配置が中途半端に止まるため）。
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+  AWS_REGION: us-east-1
+
+jobs:
+  publish:
+    # OIDC の信頼条件と同じ参照だけで動かす。
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SITE_ENV: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+    steps:
+      # 外部アクションはコミット SHA で固定する（コメントはタグ）。
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # 1〜2. 型、コンテンツ構造、日英の必須項目、テスト。
+      - run: pnpm check
+      - run: pnpm test
+
+      # 3. 環境に応じた設定でビルドする。プレビューは noindex・解析タグなし。解析タグは本番だけ。
+      - name: ビルド
+        run: pnpm build
+        env:
+          PUBLIC_SITE_ENV: ${{ github.ref_name == 'preview' && 'preview' || '' }}
+          PUBLIC_CF_ANALYTICS_TOKEN: ${{ github.ref_name == 'main' && vars.CF_ANALYTICS_TOKEN || '' }}
+
+      # 4. 主要表示（日英切り替え、ページ内リンク、参照ファイル、環境ごとの出し分け）。
+      - name: dist の検証
+        run: node scripts/verify-dist.ts dist "$SITE_ENV"
+
+      # 5. ここまでに成功したときだけ、対象環境のロールを引き受ける。
+      - name: 公開先の設定
+        run: |
+          case "$SITE_ENV" in
+            production)
+              {
+                echo "SITE_BUCKET=${{ vars.PRODUCTION_SITE_BUCKET }}"
+                echo "DISTRIBUTION_ID=${{ vars.PRODUCTION_DISTRIBUTION_ID }}"
+                echo "CHECK_HOST=${{ vars.PRODUCTION_DISTRIBUTION_DOMAIN }}"
+              } >> "$GITHUB_ENV" ;;
+            preview)
+              {
+                echo "SITE_BUCKET=${{ vars.PREVIEW_SITE_BUCKET }}"
+                echo "DISTRIBUTION_ID=${{ vars.PREVIEW_DISTRIBUTION_ID }}"
+                echo "CHECK_HOST=${{ vars.PREVIEW_DISTRIBUTION_DOMAIN }}"
+              } >> "$GITHUB_ENV" ;;
+          esac
+          echo "RELEASES_BUCKET=${{ vars.RELEASES_BUCKET }}" >> "$GITHUB_ENV"
+      - name: 設定の確認
+        run: |
+          for name in SITE_BUCKET DISTRIBUTION_ID CHECK_HOST RELEASES_BUCKET; do
+            [ -n "${!name}" ] || { echo "::error::Actions の変数 ${name}（${SITE_ENV}）が未設定"; exit 1; }
+          done
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/izu-san-publish-${{ env.SITE_ENV }}
+          aws-region: us-east-1
+
+      # 6〜8. 配置（アセット → HTML）、無効化、公開後の確認、成果物の保管、旧アセットの削除。
+      # 途中で失敗したら、直前の成功版を同じ手順で再公開する。
+      - name: 公開
+        id: publish
+        run: scripts/publish.sh release dist "$GITHUB_SHA"
+        env:
+          PREVIEW_BASIC_AUTH: ${{ secrets.PREVIEW_BASIC_AUTH }}
+          SIMULATE_FAILURE: ${{ inputs.simulate_failure }}
+
+      # 公開コミット、日時、結果を Actions に記録する。
+      - name: 記録
+        if: always()
+        run: |
+          {
+            echo "## 公開（${SITE_ENV}）"
+            echo
+            echo "| 項目 | 内容 |"
+            echo "| --- | --- |"
+            echo "| コミット | \`${GITHUB_SHA}\` |"
+            echo "| 日時 | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| 結果 | ${{ steps.publish.outcome }}（${{ steps.publish.outputs.result || '公開前に停止' }}） |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,4 +1,4 @@
-import { Duration, RemovalPolicy, Stack, type StackProps, Tags } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, type StackProps, Tags } from 'aws-cdk-lib';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
@@ -63,6 +63,15 @@ export class SiteStack extends Stack {
         releasesBucket: this.releasesBucket,
         distribution: env.distribution,
       });
+    }
+
+    // 公開ワークフロー（publish.yml）が使う値。GitHub の Actions 変数に登録する（docs/infra.md）。
+    // 秘密ではない。バケット名・ディストリビューション ID は、公開ロールの権限範囲でしか使えない。
+    new CfnOutput(this, 'ReleasesBucketName', { value: this.releasesBucket.bucketName });
+    for (const [prefix, env] of [['Production', this.production], ['Preview', this.preview]] as const) {
+      new CfnOutput(this, `${prefix}SiteBucketName`, { value: env.bucket.bucketName });
+      new CfnOutput(this, `${prefix}DistributionId`, { value: env.distribution.distributionId });
+      new CfnOutput(this, `${prefix}DistributionDomain`, { value: env.distribution.distributionDomainName });
     }
   }
 }
