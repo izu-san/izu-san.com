@@ -47,10 +47,10 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
               class="avatar"
               src={avatar}
               alt={profile.data.avatarAlt}
-              widths={[96, 192]}
-              sizes="96px"
-              width={96}
-              height={96}
+              widths={[176, 288, 576]}
+              sizes="(min-width: 48rem) 18rem, 11rem"
+              width={288}
+              height={288}
               format="webp"
               loading="eager"
             />
