@@ -19,3 +19,11 @@ items:
     usage:
       ja: PC アプリの E2E テストの自動化に使っています。
       en: Used to automate E2E tests for desktop apps.
+  - name: Playwright
+    usage:
+      ja: ブラウザーを操作する E2E テストの自動化に使っています。
+      en: Used to automate browser-driven E2E tests.
+  - name: Selenium
+    usage:
+      ja: ブラウザーを操作する E2E テストの自動化に使っています。
+      en: Used to automate browser-driven E2E tests.
