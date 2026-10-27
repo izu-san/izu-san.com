@@ -306,7 +306,8 @@ main {
 }
 
 .name-dim {
-  display: inline-block;
+  display: block;
+  width: fit-content; /* 寸法線の長さを名前の幅に合わせる（グリッド内でも伸ばさない） */
   max-width: 100%;
 }
 
@@ -349,6 +350,7 @@ main {
   margin-top: 1.75rem;
   max-width: 40rem;
   font-size: 1.125rem;
+  text-wrap: balance; /* 最後の行に 1〜2 文字だけ残さない */
 }
 
 .notes {
