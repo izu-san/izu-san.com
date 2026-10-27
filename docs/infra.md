@@ -157,3 +157,53 @@ aws route53 list-resource-record-sets --hosted-zone-id <ZONE_ID> > route53-befor
 5. 新しい資格情報で認証でき、古い資格情報と認証なしが 401 になることを確認する。
 
 資格情報はほかのサービスと共用しない。Function の設定を読める管理者にはハッシュが見えるため、管理権限を限定する。
+
+## 公開ワークフロー（`publish.yml`、ZJS-9）
+
+`main` への push で本番、`preview` への push でプレビューを公開する（仕様書 §9.2）。手順は次のとおり。`pnpm check`・`pnpm test`・`pnpm build`・`node scripts/verify-dist.ts`（日英切り替え、ページ内リンク、参照ファイル、環境ごとの noindex・解析タグの出し分け）に成功したときだけ AWS のロールを引き受けるので、検証に失敗した変更は配信中のファイルに触れない。
+
+`scripts/publish.sh release` が、次の順に行う。
+
+1. `_astro/`（`public, max-age=31536000, immutable`）→ `public/` 配下などの HTML 以外（`public, max-age=3600`）→ HTML（`max-age=0, must-revalidate`）の順に配置する。
+2. HTML と `public/` 配下のパスだけを無効化し、完了を待つ（`_astro/` は無効化しない）。
+3. 公開後の確認。HTTP→HTTPS の 301、日英ページ、存在しないパスの 404、`_astro/` の長期キャッシュ。存在するページが 200 で、存在しないパスが 403 なら、権限ではなくエラー応答の設定の不備と切り分ける。確認先は `*.cloudfront.net`（本番の Alias は ZJS-14 まで無い）。プレビューは認証なしで 401 になることを確認する。
+4. 成果物を `releases/<環境>/<コミット ID>/` に保管し、`releases/<環境>/LATEST` を更新する。
+5. 今回のビルドに含まれず、最終更新から 30 日を超えた旧アセットだけを削除する（失敗しても公開は成功とする）。
+
+途中（1〜3）で失敗したら、`LATEST` が指す直前の成功版を同じ手順で再公開し、ワークフローは失敗として終わる。直前の成功版が無い（初回）か、保管先のライフサイクル（30 日）で消えていれば復旧できない。公開コミット・日時・結果は、ジョブの要約に記録する。環境ごとに直列化し、進行中の公開はキャンセルしない。
+
+### 事前準備（サイト所有者が 1 回だけ。GitHub の設定変更なので、実行前に確認する）
+
+公開ロールの信頼条件は `ref:refs/heads/main`・`ref:refs/heads/preview` なので、公開ジョブには GitHub の Environment を使わない（`sub` が変わる）。値はリポジトリの Actions 変数・Secret に登録する。
+
+1. `IzuSanSite` を `infra` ワークフローで適用する（このブランチの出力追加を反映するため）。出力には、バケット名・ディストリビューション ID・ドメインが入る。
+   ```bash
+   aws cloudformation describe-stacks --stack-name IzuSanSite --query 'Stacks[0].Outputs' --output table
+   ```
+2. リポジトリの Actions 変数を登録する（Secret ではない）。
+
+   | 変数 | 値 |
+   | --- | --- |
+   | `AWS_ACCOUNT_ID` | AWS アカウント ID |
+   | `RELEASES_BUCKET` | 出力 `ReleasesBucketName` |
+   | `PRODUCTION_SITE_BUCKET` / `PREVIEW_SITE_BUCKET` | 出力 `ProductionSiteBucketName` / `PreviewSiteBucketName` |
+   | `PRODUCTION_DISTRIBUTION_ID` / `PREVIEW_DISTRIBUTION_ID` | 出力 `ProductionDistributionId` / `PreviewDistributionId` |
+   | `PRODUCTION_DISTRIBUTION_DOMAIN` / `PREVIEW_DISTRIBUTION_DOMAIN` | 出力 `ProductionDistributionDomain` / `PreviewDistributionDomain`（`*.cloudfront.net`） |
+   | `CF_ANALYTICS_TOKEN` | Cloudflare Web Analytics のトークン（任意。本番のビルドだけに入る。ZJS-11 以降で登録する） |
+
+3. 任意: Secret `PREVIEW_BASIC_AUTH`（`user:pass` の平文）を登録すると、プレビューの公開後に、認証後の日英ページと 404 まで確認する。未登録なら、認証なしで 401 になることだけを確認し、警告を出す。平文はパブリックリポジトリのログに出さない（curl の引数に載せず、標準入力で渡す）。
+   ```bash
+   gh secret set PREVIEW_BASIC_AUTH      # 値は標準入力で入力する
+   gh variable set AWS_ACCOUNT_ID --body <アカウント ID>
+   ```
+
+### ロールバックと自動復旧の確認
+
+初回公開前に、次の 2 つを実際に実行して確かめる（仕様書 §9.3）。
+
+- 自動復旧: `preview` ブランチで `publish` を手動起動し、`simulate_failure` を有効にする。配置の後に失敗し、直前の成功版が再公開され、ジョブの結果が `rolled-back:<コミット ID>` になること。事前に、通常の公開を 1 回成功させておく（`LATEST` が必要）。
+- 手動ロールバック: `rollback` を手動起動し、保管済みのコミット ID（40 桁）を指定する。再ビルドせずに再公開され、公開後の確認が通ること。実行する参照（`main` / `preview`）の環境に公開される。
+
+### 解析タグの切り替え
+
+`PUBLIC_SITE_ENV=preview` のビルド（`preview` ブランチ）は、`noindex` を出し、解析タグを入れない。本番のビルドだけが、変数 `CF_ANALYTICS_TOKEN` があるときに Cloudflare Web Analytics のタグを入れる。`scripts/verify-dist.ts` が、プレビューに解析タグが混入していないこと、本番に `noindex` が無いことを公開前に検証する。
