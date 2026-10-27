@@ -170,3 +170,7 @@ test('作品: 節には本文・要点・構成図のいずれかが必要で、
   const one = { lead: 'x', sections: [{ heading: 'x', diagram: { caption: 'x', rows: [{ label: 'x', nodes: [{ name: 'x' }] }] } }] };
   fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: one }, en: { ...noUrl.en, detail: one } }, 'ja.detail.sections.0.diagram.rows');
 });
+
+test('作品: 画像がないのに出典があればエラー', () => {
+  fails(workSchema, { ...work(), ja: { ...work().ja, imageCredit: { text: '出典' } } }, 'ja.imageCredit');
+});

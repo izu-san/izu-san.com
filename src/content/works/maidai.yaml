@@ -8,6 +8,11 @@ ja:
   name: MaidAI
   summary: ローカル LLM で動く、会話 AI「梨乃」を常駐させるデスクトップクライアントです。会話、音声、生活通知をつなぎ、操作は承認と監査を通す設計にしています。個人利用のため、公開リポジトリはありません。
   imageAlt: デスクトップのエディタの上に常駐し、吹き出しで話しかける梨乃（開発中の画面）
+  imageCredit:
+    text: "3D モデル: ショコラ -Chocolat-（制作: こまど／komado、販売: あまとうさぎ）を VRM 化して使用しています。モデルの権利は制作者に帰属します。"
+    link:
+      label: 商品ページ（BOOTH）
+      url: https://booth.pm/ja/items/6405390
   detail:
     lead: ローカル LLM で動く会話 AI「梨乃」を、デスクトップに常駐させるクライアントです。会話するだけでなく、頼まれた操作も実行します。実行の前に必ず人の承認を通し、記録を残すところが、いちばんのこだわりです。
     sections:
@@ -63,6 +68,11 @@ en:
   name: MaidAI
   summary: A desktop client that keeps a conversational AI character, Rino, running on a local LLM. It connects chat, voice and daily-life notifications, and routes actions through approval and audit. Built for personal use, so there is no public repository.
   imageAlt: Rino standing over an editor on the desktop and speaking in a speech bubble (development build)
+  imageCredit:
+    text: "3D model: Chocolat by komado (sold by あまとうさぎ), converted to VRM. The rights to the model belong to its creator."
+    link:
+      label: Product page (BOOTH)
+      url: https://booth.pm/ja/items/6405390
   detail:
     lead: A desktop client that keeps a conversational AI character, Rino, running on a local LLM. Rino does not only talk; it carries out requested actions. What I care about most is that every action goes through human approval first and leaves a record.
     sections:

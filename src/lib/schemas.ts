@@ -63,6 +63,8 @@ const workCopy = z.strictObject({
   name: text,
   summary: text,
   imageAlt: text.optional(),
+  // 画像の出典（第三者の素材を使うとき）。リンクは任意。
+  imageCredit: z.strictObject({ text, link: z.strictObject({ label: text, url: z.httpUrl() }).optional() }).optional(),
   detail: workDetail.optional(),
 });
 
@@ -89,6 +91,9 @@ export const createWorkSchema = (image: z.ZodType) =>
         ctx.addIssue({ code: 'custom', path: ['en', 'detail'], message: '日英で節・本文・要点・構成図の数が揃っていません' });
       }
       for (const lang of ['ja', 'en'] as const) {
+        if (work[lang].imageCredit && !work.image) {
+          ctx.addIssue({ code: 'custom', path: [lang, 'imageCredit'], message: '画像がないのに出典があります' });
+        }
         if (work.image && !work[lang].imageAlt) {
           ctx.addIssue({ code: 'custom', path: [lang, 'imageAlt'], message: '画像があるときは代替テキストが必須です' });
         }

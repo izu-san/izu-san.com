@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Base from '../layouts/Base.astro';
+import ExtLink from './ExtLink.astro';
 import { loadSiteContent } from '../lib/content.ts';
 import { languages, otherLang, paths, ui, workPath, type Lang } from '../lib/i18n.ts';
 
@@ -68,6 +69,14 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
               format="webp"
               loading="eager"
             />
+            {work.copy.imageCredit && (
+              <figcaption class="work-credit">
+                {work.copy.imageCredit.text}
+                {work.copy.imageCredit.link && (
+                  <> <ExtLink href={work.copy.imageCredit.link.url} lang={lang}>{work.copy.imageCredit.link.label}</ExtLink></>
+                )}
+              </figcaption>
+            )}
           </figure>
         )}
       </header>
