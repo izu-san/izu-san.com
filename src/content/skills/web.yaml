@@ -11,7 +11,3 @@ items:
     usage:
       ja: このサイトを静的サイトとして作っています。
       en: Builds this site as a static site.
-  - name: JavaScript
-    usage:
-      ja: Chrome 拡張「X AIポスト非表示」を作っています。
-      en: Used for the Chrome extension X AI Post Hider.
