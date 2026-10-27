@@ -27,3 +27,7 @@ items:
     usage:
       ja: ブラウザーを操作する E2E テストの自動化に使っています。
       en: Used to automate browser-driven E2E tests.
+  - name: Appium
+    usage:
+      ja: スマートフォンアプリの E2E テストの自動化に使っています。
+      en: Used to automate E2E tests for smartphone apps.
