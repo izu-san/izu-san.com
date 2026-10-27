@@ -5,8 +5,8 @@ label:
 items:
   - name: Playwright
     usage:
-      ja: ブラウザー操作の E2E テスト。
-      en: Browser-driven E2E tests.
+      ja: Web システムの E2E テスト。
+      en: E2E tests for web systems.
   - name: Selenium
     usage:
       ja: Web システムの E2E テスト。
