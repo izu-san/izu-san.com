@@ -3,9 +3,10 @@ import { Image } from 'astro:assets';
 import avatar from '../assets/avatar.png';
 import Base from '../layouts/Base.astro';
 import ExtLink from './ExtLink.astro';
-import FactoryPuzzle from './FactoryPuzzle.astro';
+import SiteFooter from './SiteFooter.astro';
+import SiteHeader from './SiteHeader.astro';
 import { loadSiteContent } from '../lib/content.ts';
-import { otherLang, paths, sectionIds, ui, workPath, type Lang } from '../lib/i18n.ts';
+import { otherLang, paths, ui, workPath, type Lang } from '../lib/i18n.ts';
 
 interface Props {
   lang: Lang;
@@ -16,8 +17,6 @@ const t = ui[lang];
 const other = otherLang(lang);
 const { profile, works, skills, career, status, links } = await loadSiteContent(lang);
 const { Content } = profile;
-// ビルド日（日本時間）。CI の実行時刻の影響を受けないよう、タイムゾーンを固定する。
-const buildDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
 const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word === word);
 ---
 
@@ -33,26 +32,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
 >
   <a class="skip-link" href="#main">{t.skip}</a>
 
-  <header class="site-header">
-    <div class="wrap">
-      <a class="site-brand" href="#profile">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="site-name">{profile.data.name}</span>
-        <span class="brand-sub" aria-hidden="true">IZU-SAN / PORTFOLIO</span>
-      </a>
-      <nav class="site-nav" aria-label={t.navLabel}>
-        <ol>
-          {sectionIds.map((id, i) => (
-            <li><a href={`#${id}`} data-section={id}><span class="nav-no" aria-hidden="true">{String(i).padStart(2, '0')}</span>{t.nav[id]}</a></li>
-          ))}
-        </ol>
-      </nav>
-      <p class="lang-switch" role="group" aria-label={t.switchLabel}>
-        <span class="lang-current" lang={lang} aria-current="true">{lang.toUpperCase()}</span>
-        <a id="lang-switch" href={paths[other]} hreflang={other} lang={other} aria-label={t.switchText}>{other.toUpperCase()}</a>
-      </p>
-    </div>
-  </header>
+  <SiteHeader lang={lang} name={profile.data.name} switchHref={paths[other]} />
 
   <main id="main">
     <section id="profile" class="hero" aria-labelledby="profile-h">
@@ -203,22 +183,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap">
-      <FactoryPuzzle lang={lang} links={links} />
-      <p>{t.footer}</p>
-      <p class="colophon">
-        {t.analytics.text}
-        <ExtLink href="https://developers.cloudflare.com/web-analytics/about/" lang={lang}>{t.analytics.link}</ExtLink>
-      </p>
-      <p class="colophon">
-        {t.colophon.built}<br />
-        {t.colophon.fonts}<br />
-        {t.colophon.source}: <ExtLink href="https://github.com/izu-san/izu-san.com" lang={lang}>{t.colophon.sourceLink}</ExtLink><br />
-        {t.colophon.buildDate}: <time datetime={buildDate}>{buildDate}</time>
-      </p>
-    </div>
-  </footer>
+  <SiteFooter lang={lang} links={links} />
 
   <script>
     // 次トークン候補: 同時に開くのは 1 つだけ。外側のクリックと Escape で閉じる。

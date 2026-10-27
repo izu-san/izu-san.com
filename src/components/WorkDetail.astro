@@ -3,6 +3,8 @@ import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Base from '../layouts/Base.astro';
 import ExtLink from './ExtLink.astro';
+import SiteFooter from './SiteFooter.astro';
+import SiteHeader from './SiteHeader.astro';
 import { loadSiteContent } from '../lib/content.ts';
 import { languages, otherLang, paths, ui, workPath, type Lang } from '../lib/i18n.ts';
 
@@ -14,7 +16,7 @@ interface Props {
 const { lang, id } = Astro.props;
 const t = ui[lang];
 const other = otherLang(lang);
-const { profile, works } = await loadSiteContent(lang);
+const { profile, works, links } = await loadSiteContent(lang);
 const work = works.find((w) => w.id === id)!;
 const detail = work.copy.detail!;
 const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)])) as Record<Lang, string>;
@@ -29,19 +31,7 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
 >
   <a class="skip-link" href="#main">{ui[lang].skip}</a>
 
-  <header class="site-header">
-    <div class="wrap">
-      <a class="site-brand" href={`${paths[lang]}#works`}>
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="site-name">{profile.data.name}</span>
-        <span class="brand-sub" aria-hidden="true">IZU-SAN / PORTFOLIO</span>
-      </a>
-      <p class="lang-switch" role="group" aria-label={t.switchLabel}>
-        <span class="lang-current" lang={lang} aria-current="true">{lang.toUpperCase()}</span>
-        <a id="lang-switch" href={pagePaths[other]} hreflang={other} lang={other} aria-label={t.switchText}>{other.toUpperCase()}</a>
-      </p>
-    </div>
-  </header>
+  <SiteHeader lang={lang} name={profile.data.name} switchHref={pagePaths[other]} base={paths[lang]} current="works" />
 
   <main id="main" class="work-detail">
     <div class="wrap">
@@ -115,10 +105,5 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap">
-      <p><a href={`${paths[lang]}#works`}>{t.work.back}</a></p>
-      <p>{t.footer}</p>
-    </div>
-  </footer>
+  <SiteFooter lang={lang} links={links} />
 </Base>

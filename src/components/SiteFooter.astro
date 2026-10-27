@@ -1,0 +1,32 @@
+---
+import ExtLink from './ExtLink.astro';
+import FactoryPuzzle from './FactoryPuzzle.astro';
+import { ui, type Lang } from '../lib/i18n.ts';
+
+interface Props {
+  lang: Lang;
+  links: { id: string; label: string; url: string }[];
+}
+
+const { lang, links } = Astro.props;
+const t = ui[lang];
+// ビルド日（日本時間）。CI の実行時刻の影響を受けないよう、タイムゾーンを固定する。
+const buildDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <FactoryPuzzle lang={lang} links={links} />
+    <p>{t.footer}</p>
+    <p class="colophon">
+      {t.analytics.text}
+      <ExtLink href="https://developers.cloudflare.com/web-analytics/about/" lang={lang}>{t.analytics.link}</ExtLink>
+    </p>
+    <p class="colophon">
+      {t.colophon.built}<br />
+      {t.colophon.fonts}<br />
+      {t.colophon.source}: <ExtLink href="https://github.com/izu-san/izu-san.com" lang={lang}>{t.colophon.sourceLink}</ExtLink><br />
+      {t.colophon.buildDate}: <time datetime={buildDate}>{buildDate}</time>
+    </p>
+  </div>
+</footer>

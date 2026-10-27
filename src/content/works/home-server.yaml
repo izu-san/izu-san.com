@@ -42,6 +42,20 @@ ja:
                   note: 定時の取得と、復元の訓練
                 - name: CI
                   note: 設定の検査と、失敗の通知
+      - heading: "技術スタック"
+        points:
+          - label: "コンテナ"
+            text: "Docker Compose です。サービスごとに compose ファイルを分け、Git で管理しています。"
+          - label: "入口"
+            text: "nginx をリバースプロキシにしています。"
+          - label: "定時処理"
+            text: "バックアップやデプロイは、systemd の timer で定時に実行します。"
+          - label: "CI"
+            text: "GitLab CI と GitLab Runner です。秘匿値の検査に gitleaks、YAML の構文検査に yamllint を使い、Docker のイメージで実行します。"
+          - label: "通知と監視"
+            text: "Zulip への通知と、サーバーの監視（server-monitor）をシェルスクリプトで組んでいます。"
+          - label: "自動化"
+            text: "設定の取り込み、バックアップ、復元の訓練を、シェルスクリプトにしています。"
       - heading: 設定の管理
         body:
           - サーバー上のファイルが正で、リポジトリは履歴と検査のための写しです。サーバーで Compose を変更したら、同期のスクリプトで取り込み、差分を確認してコミットします。
@@ -96,6 +110,20 @@ en:
                   note: Regular backups and restore drills
                 - name: CI
                   note: Checks the configuration and reports failures
+      - heading: "Tech stack"
+        points:
+          - label: "Containers"
+            text: "Docker Compose. Each service has its own compose file, kept in Git."
+          - label: "Entrance"
+            text: "nginx as the reverse proxy."
+          - label: "Scheduled jobs"
+            text: "Backups and deployments run on schedule from systemd timers."
+          - label: "CI"
+            text: "GitLab CI with GitLab Runner. gitleaks scans for secrets and yamllint checks the YAML syntax, both run from Docker images."
+          - label: "Alerts and monitoring"
+            text: "Zulip notifications and server monitoring (server-monitor) are built with shell scripts."
+          - label: "Automation"
+            text: "Pulling in configuration, backups and restore drills are shell scripts."
       - heading: Managing the configuration
         body:
           - The files on the server are the source of truth; the repository is a copy for history and checks. When I change Compose on the server, I pull it in with a sync script, review the diff and commit.

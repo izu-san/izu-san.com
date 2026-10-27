@@ -56,6 +56,22 @@ ja:
                 - name: スマートホーム
                 - name: カメラ
                 - name: Windows
+      - heading: "技術スタック"
+        points:
+          - label: "デスクトップ"
+            text: "Electron で作っています。梨乃は three.js と @pixiv/three-vrm で VRM モデルを描画し、VRMA のアニメーションを再生します。ビルドは esbuild と electron-builder です。"
+          - label: "バックエンド"
+            text: "Python です。FastAPI（uvicorn）と WebSocket で、クライアントと各サービスをつなぎます。"
+          - label: "エージェント"
+            text: "Microsoft Agent Framework と MCP（Model Context Protocol）で、ツールの呼び出しを組み立てます。"
+          - label: "イベントとデータ"
+            text: "イベントは NATS で流し、Python と TypeScript の両方から扱います。イベントの形は JSON Schema で定義しています。データは PostgreSQL に保存し、SQLAlchemy と Alembic（マイグレーション）で管理します。"
+          - label: "音声"
+            text: "音声認識に faster-whisper、読み上げ音声の時刻合わせ（口の動き）に stable-ts を使っています。"
+          - label: "機器との連携"
+            text: "OBS、Home Assistant、SwitchBot、MQTT、カレンダー、カメラ映像につなぎ、Windows の操作（音量など）も扱います。"
+          - label: "起動と検証"
+            text: "起動の管理は PySide6 のランチャーで行い、WSL の開発環境とつなぎます。検証は pytest と Node のテストです。"
       - heading: 安全の考え方
         body:
           - 操作は、梨乃が提案する段階と、実行する段階を分けています。実行の前に、何をするのかを平易な文で示して承認を求め、承認と結果を監査の記録に残します。
@@ -116,6 +132,22 @@ en:
                 - name: Smart home
                 - name: Camera
                 - name: Windows
+      - heading: "Tech stack"
+        points:
+          - label: "Desktop"
+            text: "Built with Electron. Rino is rendered as a VRM model with three.js and @pixiv/three-vrm, and VRMA animations are played back. The build uses esbuild and electron-builder."
+          - label: "Backend"
+            text: "Python. FastAPI (uvicorn) and WebSocket connect the client and the services."
+          - label: "Agent"
+            text: "Microsoft Agent Framework and MCP (Model Context Protocol) assemble the tool calls."
+          - label: "Events and data"
+            text: "Events flow through NATS and are handled from both Python and TypeScript. Event shapes are defined with JSON Schema. Data is stored in PostgreSQL and managed with SQLAlchemy and Alembic (migrations)."
+          - label: "Voice"
+            text: "faster-whisper for speech recognition, and stable-ts to align the timing of spoken audio (for the mouth movement)."
+          - label: "Device integration"
+            text: "It connects to OBS, Home Assistant, SwitchBot, MQTT, a calendar and camera images, and also handles Windows operations such as volume."
+          - label: "Launch and testing"
+            text: "A PySide6 launcher manages startup and links to the development environment on WSL. Tests are pytest and Node tests."
       - heading: Approach to safety
         body:
           - Proposing an action and carrying it out are separate steps. Before anything runs, Rino explains in plain language what it is about to do and asks for approval; the approval and the result are written to an audit record.
