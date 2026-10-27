@@ -26,4 +26,4 @@ tokens:
       - { text: Belt design, p: 0.1 }
 ---
 
-I work as a test automation engineer, and in my personal projects I try out AI-driven development and local LLMs. I manage the work as YouTrack tickets and build it together with AI agents. I am also interested in factory-automation games such as Factorio.
+I work as a test automation engineer, and in my personal projects I try out AI-driven development and local LLMs. I track the work as YouTrack tickets and build it together with AI agents. I am also interested in factory-automation games such as Factorio.

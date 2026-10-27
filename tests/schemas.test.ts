@@ -80,12 +80,12 @@ test('スキル: 英語の用途が欠けるとエラー', () => {
 });
 
 test('職歴: 英語の業務内容が空欄ならエラー', () => {
-  const c = { order: 1, start: '2020-04', field: { ja: 'a', en: 'a' }, description: { ja: 'a', en: '' } };
+  const c = { order: 1, start: '2020', field: { ja: 'a', en: 'a' }, description: { ja: 'a', en: '' } };
   fails(careerSchema, c, 'description.en');
 });
 
 test('職歴: 会社名など定義外の項目はエラー（非公開情報を持たせない）', () => {
-  const c = { order: 1, start: '2020-04', field: { ja: 'a', en: 'a' }, description: { ja: 'a', en: 'a' }, company: 'X' };
+  const c = { order: 1, start: '2020', field: { ja: 'a', en: 'a' }, description: { ja: 'a', en: 'a' }, company: 'X' };
   assert.equal(careerSchema.safeParse(c).success, false);
 });
 

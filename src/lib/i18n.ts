@@ -76,7 +76,7 @@ export const ui: Record<Lang, Ui> = {
     newTab: '（新しいタブで開きます）',
     factory: {
       summary: 'ミニ工場（遊べます）',
-      intro: 'ベルトの向きを変えて、入口の素材を出口（OUT）まで運んでください。マスを押すたびにベルトの向きが変わります（→ ↓ ← ↑ → なし）。',
+      intro: 'ベルトの向きを変えて、入口の素材を出口（OUT）まで運んでください。マスを押すたびにベルトの向きが変わります（→ ↓ ← ↑ の順に変わり、最後はベルトなしに戻ります）。',
       noscript: 'このパズルには JavaScript が必要です。連絡先は上のリンクからどうぞ。',
       boardLabel: 'ミニ工場の盤面',
       run: '起動',
@@ -143,7 +143,7 @@ export const ui: Record<Lang, Ui> = {
     newTab: '(opens in a new tab)',
     factory: {
       summary: 'Mini factory (playable)',
-      intro: 'Turn the belts to carry the materials from the entrances to the exit (OUT). Each press on a cell turns its belt (→ ↓ ← ↑ → none).',
+      intro: 'Turn the belts to carry the materials from the entrances to the exit (OUT). Each press changes the belt in the order → ↓ ← ↑, then back to no belt.',
       noscript: 'This puzzle needs JavaScript. You can reach me through the links above.',
       boardLabel: 'Mini factory board',
       run: 'Start',
