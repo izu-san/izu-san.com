@@ -1,33 +1,21 @@
-order: 2
+order: 3
 label:
   ja: テスト自動化
   en: Test automation
 items:
-  - name: Java
-    usage:
-      ja: HDD/SSD の性能テストと、ストレージ操作用 CLI を使った QA テストの自動化に使ってきました。
-      en: Has been used to automate HDD/SSD performance tests and QA tests that drive the storage CLI.
-  - name: Python
-    usage:
-      ja: 管理系 REST API のテストの自動化に使ってきました。
-      en: Has been used to automate tests for the management REST API.
-  - name: TypeScript
-    usage:
-      ja: Web システムの E2E テストの自動化に使っています。
-      en: Used to automate E2E tests for web systems.
-  - name: C#
-    usage:
-      ja: PC アプリの E2E テストの自動化に使っています。
-      en: Used to automate E2E tests for desktop apps.
   - name: Playwright
     usage:
-      ja: ブラウザーを操作する E2E テストの自動化に使っています。
-      en: Used to automate browser-driven E2E tests.
+      ja: ブラウザー操作の E2E テスト。
+      en: Browser-driven E2E tests.
   - name: Selenium
     usage:
-      ja: ブラウザーを操作する E2E テストの自動化に使っています。
-      en: Used to automate browser-driven E2E tests.
+      ja: Web システムの E2E テスト。
+      en: E2E tests for web systems.
   - name: Appium
     usage:
-      ja: スマートフォンアプリの E2E テストの自動化に使っています。
-      en: Used to automate E2E tests for smartphone apps.
+      ja: スマートフォンアプリの E2E テスト。
+      en: E2E tests for smartphone apps.
+  - name: Robot Framework
+    usage:
+      ja: Selenium を使った Web のテストと、REST API のテストの記述。
+      en: Writing web tests on top of Selenium, and REST API tests.

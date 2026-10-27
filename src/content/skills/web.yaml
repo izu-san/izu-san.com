@@ -1,13 +1,9 @@
-order: 3
+order: 4
 label:
   ja: Web 開発
   en: Web development
 items:
-  - name: TypeScript
-    usage:
-      ja: このサイトと AWS CDK のコードを書いています。
-      en: Used for this site and its AWS CDK code.
   - name: Astro
     usage:
-      ja: このサイトを静的サイトとして作っています。
-      en: Builds this site as a static site.
+      ja: このサイトを静的サイトとして生成。
+      en: Generates this site as a static site.
