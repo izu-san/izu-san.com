@@ -3,6 +3,6 @@
   "watch": { "include": ["infra/**"] },
   "context": {
     "@aws-cdk/core:newStyleStackSynthesis": true,
-    "enableProductionAlias": false
+    "enableProductionAlias": true
   }
 }
