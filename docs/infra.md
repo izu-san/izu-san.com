@@ -258,3 +258,12 @@ gh workflow run publish.yml --ref preview -f simulate_failure=true
 ### 解析タグの切り替え
 
 `PUBLIC_SITE_ENV=preview` のビルド（`preview` ブランチ）は、`noindex` を出し、解析タグを入れない。本番のビルドだけが、変数 `CF_ANALYTICS_TOKEN` があるときに Cloudflare Web Analytics のタグを入れる。`scripts/verify-dist.ts` が、プレビューに解析タグが混入していないこと、本番に `noindex` が無いことを公開前に検証する。
+
+### 検索・共有まわり（ZJS-12）
+
+- 共有画像は、ビルド時に `src/pages/og/[lang].png.ts`（`src/lib/og-image.ts`、satori と resvg）が `dist/og/ja.png`・`dist/og/en.png`（1200×630）として出力する。名前と一言はプロフィールから取る。フォントは `@fontsource` のサブセットを字ごとに読む。
+- `robots.txt` と `sitemap.xml` は、`PUBLIC_SITE_ENV` でビルド時に出し分ける。本番はクロール許可と日英の alternate 付きサイトマップ、プレビューは全面拒否と空のサイトマップ。
+- OGP の `og:url`・`og:image` は環境の URL を指す（プレビューは `https://preview.izu-san.com`。画像も認証の内側にあるので、共有カードの確認は認証済みの環境で行う）。canonical と hreflang は、どちらの環境でも本番の URL。
+- `public/`（`favicon.svg`）と、生成した画像・`robots.txt`・`sitemap.xml` は、`scripts/publish.sh` が `_astro/` 以外として `max-age=3600` で配置し、公開のたびに無効化する。
+- `scripts/verify-dist.ts` が、OGP・canonical・hreflang・JSON-LD（メールアドレスを含まない）・`robots.txt`・`sitemap.xml` を環境ごとに検証する。
+- Cloudflare Web Analytics のトークン（公開される値）は、Actions の変数 `CF_ANALYTICS_TOKEN` に登録する。未登録なら本番にもタグは入らない。登録後の公開で、本番の HTML にタグが入ることを確認する。
