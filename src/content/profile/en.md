@@ -1,8 +1,9 @@
 ---
 name: Izu-san
-headline: (Placeholder) A developer who enjoys AI-driven development, local LLMs and factory-automation games.
-pageTitle: Izu-san | Personal projects and profile
-description: (Placeholder) Profile and personal projects of Izu-san, working on AI-driven development, local LLMs and factory-automation games.
+headline: A developer who enjoys AI-driven development, local LLMs and factory-automation games.
+pageTitle: Izu-san | Test automation and personal projects
+description: Profile and personal projects of Izu-san, a test automation engineer working on AI-driven development, local LLMs and factory-automation games.
+avatarAlt: Avatar of Izu-san, a long-haired character with horns and a maid-style headdress
 interests:
   - AI-driven development
   - Local LLMs
@@ -25,4 +26,4 @@ tokens:
       - { text: Belt design, p: 0.1 }
 ---
 
-(Placeholder) The introduction goes here. It will be replaced once the real material is ready.
+I work as a test automation engineer, and in my personal projects I try out AI-driven development and local LLMs. I manage the work as YouTrack tickets and build it together with AI agents. I am also interested in factory-automation games such as Factorio.

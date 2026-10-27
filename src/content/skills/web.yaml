@@ -1,9 +1,9 @@
-order: 2
+order: 4
 label:
   ja: Web 開発
   en: Web development
 items:
-  - name: TypeScript
+  - name: Astro
     usage:
-      ja: （仮データ）個人開発で利用しています。
-      en: (Placeholder) Used in personal projects.
+      ja: このサイトを静的サイトとして生成。
+      en: Generates this site as a static site.

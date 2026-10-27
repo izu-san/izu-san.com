@@ -1,6 +1,6 @@
 order: 2
 kind: idle
-updated: "2026-10-26"
+updated: "2026-10-27"
 text:
-  ja: （仮データ）ローカル LLM の検証は一時停止しています。
-  en: (Placeholder) Local LLM experiments are paused.
+  ja: E2E 工数見積もりの技術検証は、結果をまとめた段階で止まっています。
+  en: The E2E estimation proof of concept is paused after writing up its results.

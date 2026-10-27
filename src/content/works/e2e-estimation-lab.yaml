@@ -1,0 +1,12 @@
+order: 2
+tech:
+  - Python
+  - Claude Code
+  - Playwright
+url: https://github.com/izu-san/e2e-estimation-lab
+ja:
+  name: E2E 自動化 工数見積もり
+  summary: E2E テスト自動化の工数見積もりを、AI と Python のツールで行う技術検証です。項目書を読んで判断する部分を AI が、数える・計算する・検算する部分を Python が担当します。業務データは使っていません。
+en:
+  name: E2E Automation Estimation Lab
+  summary: A proof of concept that estimates the effort of E2E test automation with AI and Python tools. AI reads the test specification and makes judgments; Python counts, calculates and cross-checks. No business data is used.

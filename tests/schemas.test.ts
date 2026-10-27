@@ -56,6 +56,20 @@ test('作品: 画像があるのに代替テキストが無ければエラー', 
   fails(workSchema, { ...work(), image: 'a.png' }, 'ja.imageAlt');
 });
 
+test('作品: URL は省略できる（公開 URL が無い作品）', () => {
+  const w: any = work();
+  delete w.url;
+  assert.equal(workSchema.safeParse(w).success, true);
+});
+
+test('作品: URL が http(s) でなければエラー', () => {
+  fails(workSchema, { ...work(), url: 'not-a-url' }, 'url');
+});
+
+test('プロフィール: アバターの代替テキストが空ならエラー', () => {
+  fails(profileSchema, { ...profile(), avatarAlt: ' ' }, 'avatarAlt');
+});
+
 test('スキル: 英語の用途が欠けるとエラー', () => {
   const s = { order: 1, label: { ja: 'AI', en: 'AI' }, items: [{ name: 'X', usage: { ja: '用途' } }] };
   fails(skillSchema, s, 'items.0.usage.en');
@@ -72,7 +86,7 @@ test('職歴: 会社名など定義外の項目はエラー（非公開情報を
 });
 
 test('プロフィール: 必須項目の空欄はエラー', () => {
-  const p = { name: 'a', headline: '', pageTitle: 'a', description: 'a', interests: ['a'] };
+  const p = { name: 'a', headline: '', pageTitle: 'a', description: 'a', avatarAlt: 'a', interests: ['a'] };
   fails(profileSchema, p, 'headline');
 });
 
@@ -90,6 +104,7 @@ const profile = () => ({
   headline: 'a',
   pageTitle: 'a',
   description: 'a',
+  avatarAlt: 'a',
   interests: ['X', 'Y'],
   tokens: [{ word: 'X', candidates: [{ text: 'a', p: 0.6 }, { text: 'b', p: 0.3 }] }],
 });

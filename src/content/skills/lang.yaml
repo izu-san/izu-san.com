@@ -1,0 +1,21 @@
+order: 2
+label:
+  ja: プログラミング言語
+  en: Programming languages
+items:
+  - name: Java
+    usage:
+      ja: HDD/SSD の性能テストと、ストレージ操作用 CLI を使った QA テスト。
+      en: HDD/SSD performance tests and QA tests that drive the storage CLI.
+  - name: Python
+    usage:
+      ja: 管理系 REST API のテストと、E2E 工数見積もりの検証ツール。
+      en: Tests for the management REST API, and the tooling in the E2E estimation experiment.
+  - name: TypeScript
+    usage:
+      ja: Web システムの E2E テストと、このサイトの実装。
+      en: E2E tests for web systems, and the implementation of this site.
+  - name: C#
+    usage:
+      ja: PC アプリの E2E テスト。
+      en: E2E tests for desktop apps.

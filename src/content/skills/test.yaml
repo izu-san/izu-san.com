@@ -1,0 +1,21 @@
+order: 3
+label:
+  ja: テスト自動化
+  en: Test automation
+items:
+  - name: Playwright
+    usage:
+      ja: Web システムの E2E テスト。
+      en: E2E tests for web systems.
+  - name: Selenium
+    usage:
+      ja: Web システムの E2E テスト。
+      en: E2E tests for web systems.
+  - name: Appium
+    usage:
+      ja: スマートフォンアプリの E2E テスト。
+      en: E2E tests for smartphone apps.
+  - name: Robot Framework
+    usage:
+      ja: Selenium を使った Web のテストと、REST API のテストの記述。
+      en: Writing web tests on top of Selenium, and REST API tests.
