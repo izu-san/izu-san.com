@@ -1108,6 +1108,10 @@ button.factory-cell:hover {
 .work-detail .wrap {
   display: grid;
   gap: 2.5rem;
+}
+
+/* 本文は読みやすい幅に抑え、左端はヘッダー・フッターに揃える */
+.work-detail .wrap > * {
   max-width: 56rem;
 }
 

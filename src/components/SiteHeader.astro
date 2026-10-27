@@ -1,0 +1,39 @@
+---
+import { otherLang, paths, sectionIds, ui, type Lang, type SectionId } from '../lib/i18n.ts';
+
+interface Props {
+  lang: Lang;
+  name: string;
+  /** もう一方の言語への切り替え先。 */
+  switchHref: string;
+  /** トップ以外のページでは、トップのパスを渡す（ナビはトップのセクションへ向く）。 */
+  base?: string;
+  /** トップ以外のページで、現在のセクションとして示す項目。 */
+  current?: SectionId;
+}
+
+const { lang, name, switchHref, base = '', current } = Astro.props;
+const t = ui[lang];
+const other = otherLang(lang);
+---
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="site-brand" href={base || '#profile'}>
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="site-name">{name}</span>
+      <span class="brand-sub" aria-hidden="true">IZU-SAN / PORTFOLIO</span>
+    </a>
+    <nav class="site-nav" aria-label={t.navLabel}>
+      <ol>
+        {sectionIds.map((id, i) => (
+          <li><a href={`${base}#${id}`} data-section={id} aria-current={id === current ? 'location' : undefined}><span class="nav-no" aria-hidden="true">{String(i).padStart(2, '0')}</span>{t.nav[id]}</a></li>
+        ))}
+      </ol>
+    </nav>
+    <p class="lang-switch" role="group" aria-label={t.switchLabel}>
+      <span class="lang-current" lang={lang} aria-current="true">{lang.toUpperCase()}</span>
+      <a id="lang-switch" href={switchHref} hreflang={other} lang={other} aria-label={t.switchText}>{other.toUpperCase()}</a>
+    </p>
+  </div>
+</header>

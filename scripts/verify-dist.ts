@@ -169,6 +169,14 @@ function verifyWorkDetails(
       if (metaContent(html, 'property', 'og:url') !== `${origin}${path(lang)}`) errors.push(`${file}: og:url が環境の URL でない`);
       if (!metaContent(html, 'property', 'og:title')) errors.push(`${file}: og:title がない`);
       if (!/<h1[ >]/.test(html)) errors.push(`${file}: h1 がない`);
+      // トップと同じヘッダー（セクションのナビ）とフッター（解析の説明）がある。
+      for (const section of ['profile', 'works', 'skills', 'career', 'contact']) {
+        const href = `${lang === 'ja' ? '/' : '/en/'}#${section}`;
+        if (!attrs(html, 'href').includes(href)) errors.push(`${file}: ナビのリンク（${href}）がない`);
+      }
+      if (!attrs(html, 'href').includes('https://developers.cloudflare.com/web-analytics/about/')) {
+        errors.push(`${file}: 解析サービスの説明へのリンクがない`);
+      }
       const noindex = /<meta name="robots" content="[^"]*noindex/.test(html);
       if (env === 'preview' && !noindex) errors.push(`${file}: プレビューなのに noindex がない`);
       if (env === 'production' && noindex) errors.push(`${file}: 本番なのに noindex がある`);
