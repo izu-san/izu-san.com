@@ -172,6 +172,9 @@ importers:
       '@fontsource/dela-gothic-one':
         specifier: 5.3.0
         version: 5.3.0
+      '@fontsource/zen-kaku-gothic-new':
+        specifier: 5.3.1
+        version: 5.3.1
       astro:
         specifier: ^7.4.2
         version: 7.4.2(@types/node@24.19.2)(yaml@2.9.1)
@@ -436,6 +439,9 @@ packages:
 
   '@fontsource/dela-gothic-one@5.3.0':
     resolution: {integrity: sha512-4A26Qs7TqYFWegJfYHx7KKWy01YybW/e7uhFDM8A8e1neVPm721laLnh0en60wtKihfNdCbJt0VVcEMHC4pHjw==}
+
+  '@fontsource/zen-kaku-gothic-new@5.3.1':
+    resolution: {integrity: sha512-L69mE6bkzeVK3UdTenxOmCIWvTwMxohJRNm1dAj+W+UiCULQ91b7M77ENVw+pjGmFL6zKPFYFeH3g8x2ugAJNw==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2036,6 +2042,8 @@ snapshots:
       tslib: 2.8.1
 
   '@fontsource/dela-gothic-one@5.3.0': {}
+
+  '@fontsource/zen-kaku-gothic-new@5.3.1': {}
 
   '@img/colour@1.1.0':
     optional: true
