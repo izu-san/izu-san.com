@@ -1,7 +1,7 @@
 // ビルド結果（dist/）の主要表示を検証する。公開の前に、AWS の権限なしで実行する（仕様書 §9.2 手順 4）。
 // 使い方: node scripts/verify-dist.ts <dist> <production|preview>
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export type SiteEnv = 'production' | 'preview';
