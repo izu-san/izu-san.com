@@ -5,9 +5,9 @@ label:
 items:
   - name: Claude Code
     usage:
-      ja: 個人開発の実装、仕様の整理、レビューに使っています。YouTrack のチケットを起点に、AI エージェントと進めています。
-      en: Used for implementation, spec writing and review in personal projects, working with AI agents from YouTrack tickets.
+      ja: 個人開発の実装、仕様の整理、レビュー。YouTrack のチケットを起点に、AI エージェントと進めています。
+      en: Implementation, spec writing and review in personal projects, worked on with AI agents from YouTrack tickets.
   - name: ローカル LLM
     usage:
-      ja: 自分の PC で動かし、会話 AI「梨乃」や競馬予想の実験に使っています。
-      en: Run on my own PC and used for the conversational AI Rino and a horse-racing prediction experiment.
+      ja: 自分の PC で動かし、会話 AI「梨乃」や競馬予想の実験に利用。
+      en: Run on my own PC for the conversational AI Rino and a horse-racing prediction experiment.
