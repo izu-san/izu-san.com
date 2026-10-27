@@ -120,8 +120,12 @@ check() {
 
   expect_status 200 "${base}/" "日本語版"
   expect_status 200 "${base}/en/" "英語版"
-  http_get "${base}/" | grep -q '<html lang="ja"' || fail "日本語版の内容が違う"
-  http_get "${base}/en/" | grep -q '<html lang="en"' || fail "英語版の内容が違う"
+  # 本文は変数に取ってから調べる（grep -q が早く終わると、curl が失敗して pipefail で誤判定する）。
+  local body
+  body=$(http_get "${base}/")
+  grep -q '<html lang="ja"' <<<"$body" || fail "日本語版の内容が違う"
+  body=$(http_get "${base}/en/")
+  grep -q '<html lang="en"' <<<"$body" || fail "英語版の内容が違う"
 
   # 存在しないパスは 404。S3 の 403 が 404 に変換されていなければ、エラー応答の設定を疑う。
   # 存在するページが 200 なので、権限不備（読めない）とは切り分けられている。
@@ -134,7 +138,8 @@ check() {
     fi
     expect_status 404 "${base}${missing}" "存在しないパス ${missing}"
   done
-  http_get "${base}/__publish-check-missing__" | grep -q '<html' || fail "404 の本文がカスタム 404 ページでない"
+  body=$(http_get "${base}/__publish-check-missing__")
+  grep -q '<html' <<<"$body" || fail "404 の本文がカスタム 404 ページでない"
 
   # ハッシュ付きアセットに長期キャッシュが付いている。
   local asset
