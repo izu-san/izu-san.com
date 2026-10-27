@@ -1,8 +1,8 @@
 ---
 name: Izu-san
 headline: A developer who enjoys AI-driven development, local LLMs and factory-automation games.
-pageTitle: Izu-san | Personal projects and profile
-description: Profile and personal projects of Izu-san, working on AI-driven development, local LLMs and factory-automation games.
+pageTitle: Izu-san | Test automation and personal projects
+description: Profile and personal projects of Izu-san, a test automation engineer working on AI-driven development, local LLMs and factory-automation games.
 avatarAlt: Avatar of Izu-san, a long-haired character with horns and a maid-style headdress
 interests:
   - AI-driven development
