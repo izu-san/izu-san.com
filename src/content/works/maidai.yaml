@@ -25,7 +25,7 @@ ja:
           - label: 生活通知
             text: 予定や日々の通知を、梨乃が声をかける形で知らせます。
           - label: 操作
-            text: 配信ソフト、スマートホーム機器、カメラ、Windows の操作を、ツールとして呼び出せます。
+            text: 配信ソフト、スマートホーム機器、カメラ、パソコンの操作を、ツールとして呼び出せます。
       - heading: 仕組み
         body:
           - デスクトップのクライアントが画面と入力を受け持ち、会話、エージェント、ツールは別の部分に分けています。部分どうしはイベントバスでつなぎ、機能を足しても他の部分を書き換えずに済むようにしています。
@@ -55,7 +55,7 @@ ja:
                 - name: 配信
                 - name: スマートホーム
                 - name: カメラ
-                - name: Windows
+                - name: パソコン
       - heading: "技術スタック"
         points:
           - label: "デスクトップ"
@@ -69,16 +69,15 @@ ja:
           - label: "音声"
             text: "音声認識に faster-whisper、読み上げ音声の時刻合わせ（口の動き）に stable-ts を使っています。"
           - label: "機器との連携"
-            text: "OBS、Home Assistant、SwitchBot、MQTT、カレンダー、カメラ映像につなぎ、Windows の操作（音量など）も扱います。"
+            text: "配信ソフト、スマートホーム機器、カレンダー、カメラ映像につなぎ、パソコンの操作（音量など）も扱います。"
           - label: "起動と検証"
             text: "起動の管理は PySide6 のランチャーで行い、WSL の開発環境とつなぎます。検証は pytest と Node のテストです。"
       - heading: 安全の考え方
         body:
           - 操作は、梨乃が提案する段階と、実行する段階を分けています。実行の前に、何をするのかを平易な文で示して承認を求め、承認と結果を監査の記録に残します。
-          - 個人利用の道具なので、公開リポジトリはありません。
       - heading: 開発の進め方
         body:
-          - 開発は WSL の dev 環境で行い、本番の Windows とは分けています。仕様と手順は YouTrack に集めています。
+          - 開発は WSL の dev 環境で行い、普段使いの環境とは分けています。仕様と手順は YouTrack に集めています。
           - 実装やレビューは AI エージェントに役割を分けて任せ、要件の判断と受け入れは自分で行います。ローカル LLM の制約（コンテキストの長さや GPU への収まり）も見ながら、任せる範囲を絞っています。
 en:
   name: MaidAI
@@ -97,11 +96,11 @@ en:
           - label: Chat
             text: Replies come from a local LLM. It is designed to run on my own machine instead of handing conversations to a cloud API. Rino has a character setting and speaks from a corner of the screen.
           - label: Voice
-            text: It supports voice input and spoken replies. Speech is shown with the mouth movement matched to the voice.
+            text: It supports voice input and spoken replies. The character's mouth moves in time with the voice.
           - label: Daily notices
             text: Schedules and everyday notifications are delivered by Rino calling out to me.
           - label: Actions
-            text: It can call tools for streaming software, smart-home devices, a camera and Windows.
+            text: It can call tools for streaming software, smart-home devices, a camera and the PC.
       - heading: How it works
         body:
           - The desktop client handles the screen and input, while chat, the agent and the tools are separate parts. They are connected through an event bus, so adding a feature does not mean rewriting the others.
@@ -131,7 +130,7 @@ en:
                 - name: Streaming
                 - name: Smart home
                 - name: Camera
-                - name: Windows
+                - name: PC
       - heading: "Tech stack"
         points:
           - label: "Desktop"
@@ -145,14 +144,13 @@ en:
           - label: "Voice"
             text: "faster-whisper for speech recognition, and stable-ts to align the timing of spoken audio (for the mouth movement)."
           - label: "Device integration"
-            text: "It connects to OBS, Home Assistant, SwitchBot, MQTT, a calendar and camera images, and also handles Windows operations such as volume."
+            text: "It connects to streaming software, smart-home devices, a calendar and camera images, and also handles PC operations such as volume."
           - label: "Launch and testing"
             text: "A PySide6 launcher manages startup and links to the development environment on WSL. Tests are pytest and Node tests."
       - heading: Approach to safety
         body:
           - Proposing an action and carrying it out are separate steps. Before anything runs, Rino explains in plain language what it is about to do and asks for approval; the approval and the result are written to an audit record.
-          - It is a tool for personal use, so there is no public repository.
       - heading: How it is developed
         body:
-          - Development happens in a dev environment on WSL, separate from the production setup on Windows. Specs and procedures are collected in YouTrack.
+          - Development happens in a dev environment on WSL, separate from the environment I use day to day. Specs and procedures are collected in YouTrack.
           - Implementation and review are split among AI agents by role, while I make the requirement decisions and accept the results. I keep the delegated scope narrow, keeping in mind the limits of a local LLM (context length and what fits on the GPU).

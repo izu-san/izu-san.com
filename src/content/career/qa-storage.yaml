@@ -1,9 +1,9 @@
 order: 1
-start: "2010-04"
-end: "2025-04"
+start: "2010"
+end: "2025"
 field:
   ja: ストレージ製品の品質保証
   en: Quality assurance for storage products
 description:
   ja: 製品に組み込まれるマイクロプログラムとハードウェアのテストを担当しました。HDD/SSD の性能テストの自動化、ストレージ操作用 CLI を使った QA テストの自動化、管理系 REST API のテストの自動化に取り組みました。
-  en: Tested the firmware embedded in the products, and the hardware. Automated HDD/SSD performance tests, QA tests that drive the storage CLI, and tests for the management REST API.
+  en: Tested the embedded firmware and the hardware of the products. Automated HDD/SSD performance tests, QA tests that drive the storage CLI, and tests for the management REST API.
