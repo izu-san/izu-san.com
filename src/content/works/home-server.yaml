@@ -1,0 +1,12 @@
+order: 4
+tech:
+  - Docker Compose
+  - GitLab
+  - YouTrack
+  - Linux
+ja:
+  name: 自宅サーバーの運用
+  summary: GitLab、YouTrack、Zulip などを自宅のサーバーで動かしています。Compose の設定を Git で管理し、変更は CI で検査しています。公開リポジトリはありません。
+en:
+  name: Home server operations
+  summary: Runs GitLab, YouTrack, Zulip and other services on my home server. The Compose files are kept in Git and checked in CI. There is no public repository.

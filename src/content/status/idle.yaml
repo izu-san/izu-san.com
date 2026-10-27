@@ -2,5 +2,5 @@ order: 2
 kind: idle
 updated: "2026-10-27"
 text:
-  ja: X AIポスト非表示（Chrome 拡張）は、不具合があれば直す程度に留めています。
-  en: X AI Post Hider (a Chrome extension) is only fixed when something breaks.
+  ja: E2E 工数見積もりの技術検証は、結果をまとめた段階で止まっています。
+  en: The E2E estimation proof of concept is paused after writing up its results.
