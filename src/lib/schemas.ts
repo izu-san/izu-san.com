@@ -9,7 +9,7 @@ export const text = z
 export const bilingual = z.strictObject({ ja: text, en: text });
 
 const order = z.number().int().positive();
-const yearMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'YYYY-MM 形式で指定してください' });
+const year = z.string().regex(/^\d{4}$/, { error: 'YYYY 形式で指定してください' });
 
 // 関心領域の「次トークン候補」。word は interests のいずれかと一致させる。確率の合計は 1 以下。
 const tokenCandidate = z.strictObject({ text, p: z.number().gt(0).lte(1) });
@@ -117,8 +117,8 @@ export const skillSchema = z.strictObject({
 // 職歴: src/content/career/<職歴ID>.yaml。会社名などの項目は定義せず、strict で混入を拒否する。
 export const careerSchema = z.strictObject({
   order,
-  start: yearMonth,
-  end: yearMonth.optional(),
+  start: year,
+  end: year.optional(),
   field: bilingual,
   description: bilingual,
 });

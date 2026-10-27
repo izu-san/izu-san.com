@@ -18,8 +18,6 @@ ja:
             text: チケットと、仕様書などのナレッジベース。このサイトの仕様書とチケットも、ここで管理しています。
           - label: Zulip
             text: チャットと通知。CI の失敗や、サーバーの異常の知らせを受け取ります。
-          - label: 管理と認証
-            text: パスワード管理と、サービスの認証基盤も、自前で動かしています。
       - heading: 構成
         diagram:
           caption: 自宅サーバーの構成（上から下へ、リクエストが流れます）
@@ -33,7 +31,6 @@ ja:
                 - name: GitLab
                 - name: YouTrack
                 - name: Zulip
-                - name: 管理と認証
             - label: 運用
               nodes:
                 - name: 監視
@@ -47,13 +44,13 @@ ja:
           - label: "コンテナ"
             text: "Docker Compose です。サービスごとに compose ファイルを分け、Git で管理しています。"
           - label: "入口"
-            text: "nginx をリバースプロキシにしています。"
+            text: "リバースプロキシを置いて、外からの接続を受けています。"
           - label: "定時処理"
-            text: "バックアップやデプロイは、systemd の timer で定時に実行します。"
+            text: "バックアップやデプロイは、定時に自動で実行します。"
           - label: "CI"
-            text: "GitLab CI と GitLab Runner です。秘匿値の検査に gitleaks、YAML の構文検査に yamllint を使い、Docker のイメージで実行します。"
+            text: "GitLab CI と GitLab Runner です。秘匿値の検査と YAML の構文検査を、Docker のイメージで実行します。"
           - label: "通知と監視"
-            text: "Zulip への通知と、サーバーの監視（server-monitor）をシェルスクリプトで組んでいます。"
+            text: "Zulip への通知と、サーバーの監視を、シェルスクリプトで組んでいます。"
           - label: "自動化"
             text: "設定の取り込み、バックアップ、復元の訓練を、シェルスクリプトにしています。"
       - heading: 設定の管理
@@ -71,7 +68,6 @@ ja:
       - heading: 運用で気をつけていること
         body:
           - バックアップは、取るだけでなく、復元を試す訓練まで含めて運用しています。サービスの死活は監視の仕組みで見ています。
-          - 運用の記録と設定は非公開のため、公開リポジトリはありません。
 en:
   name: Home server operations
   summary: Runs GitLab, YouTrack, Zulip and other services on my home server. The Compose files are kept in Git and checked in CI. There is no public repository.
@@ -83,11 +79,9 @@ en:
           - label: GitLab
             text: Repositories and CI. Configuration checks and failure notifications also run here.
           - label: YouTrack
-            text: Tickets and a knowledge base for specs and the like. The spec and tickets of this site are managed here too.
+            text: Tickets and a knowledge base for specs and other documents. The spec and tickets of this site are managed here too.
           - label: Zulip
             text: Chat and notifications. It receives CI failures and server alerts.
-          - label: Secrets and authentication
-            text: A password manager and an authentication service for the other services also run on it.
       - heading: Architecture
         diagram:
           caption: Home server architecture (requests flow from top to bottom)
@@ -101,7 +95,6 @@ en:
                 - name: GitLab
                 - name: YouTrack
                 - name: Zulip
-                - name: Secrets and authentication
             - label: Operations
               nodes:
                 - name: Monitoring
@@ -115,13 +108,13 @@ en:
           - label: "Containers"
             text: "Docker Compose. Each service has its own compose file, kept in Git."
           - label: "Entrance"
-            text: "nginx as the reverse proxy."
+            text: "A reverse proxy takes connections from outside."
           - label: "Scheduled jobs"
-            text: "Backups and deployments run on schedule from systemd timers."
+            text: "Backups and deployments run automatically on a schedule."
           - label: "CI"
-            text: "GitLab CI with GitLab Runner. gitleaks scans for secrets and yamllint checks the YAML syntax, both run from Docker images."
+            text: "GitLab CI with GitLab Runner. The secret scan and the YAML syntax check both run from Docker images."
           - label: "Alerts and monitoring"
-            text: "Zulip notifications and server monitoring (server-monitor) are built with shell scripts."
+            text: "Zulip notifications and server monitoring are built with shell scripts."
           - label: "Automation"
             text: "Pulling in configuration, backups and restore drills are shell scripts."
       - heading: Managing the configuration
@@ -138,5 +131,4 @@ en:
             text: Secrets and data are not kept in the repository. Compose reads them through variables and file references.
       - heading: What I keep in mind
         body:
-          - Backups are not only taken but also practised, and restore drills are part of the routine. Whether services are alive is watched by a monitoring setup.
-          - The operational records and configuration are private, so there is no public repository.
+          - I take backups and also rehearse restores, so restore drills are part of the routine. A monitoring setup checks that each service is up.
