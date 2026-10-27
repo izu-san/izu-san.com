@@ -169,11 +169,14 @@ function verifyWorkDetails(
       if (metaContent(html, 'property', 'og:url') !== `${origin}${path(lang)}`) errors.push(`${file}: og:url が環境の URL でない`);
       if (!metaContent(html, 'property', 'og:title')) errors.push(`${file}: og:title がない`);
       if (!/<h1[ >]/.test(html)) errors.push(`${file}: h1 がない`);
-      // トップと同じヘッダー（セクションのナビ）とフッター（解析の説明）がある。
-      for (const section of ['profile', 'works', 'skills', 'career', 'contact']) {
-        const href = `${lang === 'ja' ? '/' : '/en/'}#${section}`;
-        if (!attrs(html, 'href').includes(href)) errors.push(`${file}: ナビのリンク（${href}）がない`);
+      // ヘッダーのナビは、そのページの節（#sec-N）へ向く。トップのセクションへは向けない。
+      const nav = /<nav class="site-nav"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? '';
+      const navLinks = attrs(nav, 'href');
+      if (navLinks.length === 0) errors.push(`${file}: ヘッダーのナビがない`);
+      for (const href of navLinks) {
+        if (!/^#sec-\d+$/.test(href)) errors.push(`${file}: ナビのリンク ${href} が、ページ内の節（#sec-N）でない`);
       }
+      // トップと同じフッター（解析の説明）がある。
       if (!attrs(html, 'href').includes('https://developers.cloudflare.com/web-analytics/about/')) {
         errors.push(`${file}: 解析サービスの説明へのリンクがない`);
       }

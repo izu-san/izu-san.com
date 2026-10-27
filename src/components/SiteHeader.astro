@@ -1,20 +1,23 @@
 ---
-import { otherLang, paths, sectionIds, ui, type Lang, type SectionId } from '../lib/i18n.ts';
+import { otherLang, sectionIds, ui, type Lang } from '../lib/i18n.ts';
 
 interface Props {
   lang: Lang;
   name: string;
   /** もう一方の言語への切り替え先。 */
   switchHref: string;
-  /** トップ以外のページでは、トップのパスを渡す（ナビはトップのセクションへ向く）。 */
+  /** ブランド名のリンク先。省略するとページ内のプロフィール（トップ）。 */
   base?: string;
-  /** トップ以外のページで、現在のセクションとして示す項目。 */
-  current?: SectionId;
+  /** ナビに並べるページ内の項目。省略するとトップのセクション。個別ページは、そのページの節を渡す。 */
+  items?: { id: string; label: string }[];
 }
 
-const { lang, name, switchHref, base = '', current } = Astro.props;
+const { lang, name, switchHref, base = '', items } = Astro.props;
 const t = ui[lang];
 const other = otherLang(lang);
+const navItems = items ?? sectionIds.map((id) => ({ id, label: t.nav[id] }));
+// トップはプロフィールを 00、個人開発を 01 …とする。個別ページは節の番号（SEC.01 …）に合わせる。
+const first = items ? 1 : 0;
 ---
 
 <header class="site-header">
@@ -26,8 +29,8 @@ const other = otherLang(lang);
     </a>
     <nav class="site-nav" aria-label={t.navLabel}>
       <ol>
-        {sectionIds.map((id, i) => (
-          <li><a href={`${base}#${id}`} data-section={id} aria-current={id === current ? 'location' : undefined}><span class="nav-no" aria-hidden="true">{String(i).padStart(2, '0')}</span>{t.nav[id]}</a></li>
+        {navItems.map(({ id, label }, i) => (
+          <li><a href={`#${id}`} data-section={id}><span class="nav-no" aria-hidden="true">{String(i + first).padStart(2, '0')}</span>{label}</a></li>
         ))}
       </ol>
     </nav>
@@ -37,3 +40,52 @@ const other = otherLang(lang);
     </p>
   </div>
 </header>
+
+<script>
+  // 表示中のセクションをナビで示す（JavaScript が使えるときだけ）。
+  // 末尾のセクションは短く、ページ下端まででは帯に届かないため、
+  // 下端では最後の項目を現在とし、ナビを押したときは押した項目を現在とする。
+  const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.site-nav a[data-section]')];
+  if (navLinks.length && 'IntersectionObserver' in window) {
+    const visible = new Set<string>();
+    let chosen: string | undefined;
+    const atBottom = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+    const mark = () => {
+      // 帯にかかっているセクションのうち、ページの下にある方を現在とする。
+      const current =
+        chosen ??
+        (atBottom() ? navLinks.at(-1)?.dataset.section : navLinks.findLast((a) => visible.has(a.dataset.section!))?.dataset.section);
+      for (const a of navLinks) {
+        if (a.dataset.section === current) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
+      }
+    };
+    const spy = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        mark();
+      },
+      { rootMargin: '-20% 0px -55% 0px' },
+    );
+    for (const a of navLinks) {
+      const section = document.getElementById(a.dataset.section!);
+      if (section) spy.observe(section);
+      a.addEventListener('click', () => {
+        chosen = a.dataset.section;
+        mark();
+      });
+    }
+    // 利用者が自分でスクロールしたら、押した項目の固定をやめる。
+    const release = () => {
+      if (chosen) {
+        chosen = undefined;
+        mark();
+      }
+    };
+    for (const type of ['wheel', 'touchmove', 'keydown'] as const) addEventListener(type, release, { passive: true });
+    addEventListener('scroll', mark, { passive: true });
+  }
+</script>
