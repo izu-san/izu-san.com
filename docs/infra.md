@@ -14,7 +14,7 @@ us-east-1 の 1 スタック `IzuSanSite` で、本番とプレビューの配�
 | Function | 環境ごとの viewer-request Function（`infra/functions/viewer-request.js`）。プレビューは Basic 認証、両環境で URL の書き換えと 301 転送 |
 | Route 53 | 既存ホストゾーンは参照のみ。追加するのは ACM 検証レコードとプレビューの A/AAAA Alias だけ |
 
-全リソースに `Project=izu-san.com` のタグを付ける（費用通知 ZJS-13 で使う）。
+全リソースに `Project=izu-san.com`（と `Environment`）のタグを付ける。費用通知（ZJS-13、下記「費用通知」）がこのタグで追加費用を絞る。
 
 ## 本番の Alias
 
@@ -119,6 +119,48 @@ aws route53 change-resource-record-sets ...      # AccessDenied
 - CloudFormation はプランの tier を変更しない（変更する更新は拒否される）。
 - ディストリビューションを置換・削除する変更は、先にプランの解約が必要。CloudFormation のスタック削除では、解約から削除まで自動で進む（ZJS-2 で確認済み）。置換を含む `cdk diff` が出たら、適用前にサイト所有者へ確認する。
 - CLI で確認するとき: `aws pricing-plan-manager list-subscriptions`（連続して呼ぶと `TooManyRequestsException` になることがあるため再試行する）。
+
+## 費用通知（ZJS-13）
+
+サイトによる追加費用を、既存の AWS 費用と区別して把握し、月 1 ドル・3 ドルを超えそうなときにメールで通知する。**通知だけで、課金は自動で止まらない。**
+
+- 区別の方法: コスト配分タグ `Project=izu-san.com`（全リソースに付与済み）。AWS Budgets のフィルター（`TagKeyValue`）と Cost Explorer の「タグ: Project」で絞る。
+- 予算: スタック `IzuSanCost`（`infra/lib/cost-stack.ts`）が `izu-san-site-1usd`・`izu-san-site-3usd` を作る。それぞれ、実績と予測が予算の 100% を超えたときに通知する。既存の `My Monthly Cost Budget`（月 20 ドル、アカウント全体）は変更しない。
+- 通知先はパブリックリポジトリに載せない。適用時の環境変数 `COST_ALERT_EMAIL` で渡す（未設定なら `IzuSanCost` は作られない）。
+- `IzuSanCost` は、通知設定を CI から変えられないよう、`IzuSanDeployer` と同じく管理者が手動で適用する（`infra` ワークフローの対象外。CloudFormation の実行ポリシーにも budgets 権限を足さない）。
+
+### 適用手順（サイト所有者が 1 回だけ。課金設定の変更なので、実行前に確認する）
+
+1. コスト配分タグを有効化する（管理者の認証情報）。反映に最大 24 時間かかり、**有効化より前の費用はタグで絞れない**。有効化前は、予算の費用が 0 のままになる。
+
+   ```bash
+   aws ce update-cost-allocation-tags-status --region us-east-1 \
+     --cost-allocation-tags-status TagKey=Project,Status=Active TagKey=Environment,Status=Active
+   ```
+
+2. 予算を適用する（変更セットの内容を確認してから y）。
+
+   ```bash
+   COST_ALERT_EMAIL=<通知先のメールアドレス> pnpm cost:apply
+   ```
+
+3. 確認する: `aws budgets describe-budgets --account-id <ID>` に 2 件が増えていること。タグの反映後（翌日以降）、Cost Explorer で「タグ: Project = izu-san.com」にすると、サイトの費用だけが見える。
+
+### 別料金になりうる項目と見込み（2026-10-27 時点。「完全無料」とは断定しない）
+
+| 項目 | 見込み |
+| --- | --- |
+| CloudFront | Free プランは月額 0 ドル（`CloudFront Flat-Rate Plans` は 0 ドルを確認）。プランの範囲を超える利用は想定しない |
+| WAF の Web ACL | 2 つ（本番・プレビュー）。プランに含まれる想定だが、請求上の扱いは適用直後の請求で確認する（10/26 の `Global-WebACLV2` は 0.0043 ドル） |
+| S3（公開先・成果物保管先） | 容量は小さく、PUT/GET も少ない。月数セント以下の見込み。成果物は 30 日で削除する |
+| CloudFront Function | 呼び出し数に応じた従量課金（無料枠あり）。個人サイトの規模なら 0 に近い。ログ（`console.log`）は出力しない |
+| ACM・IAM・OIDC・CloudFormation | 無料 |
+| CDK の補助リソース（bootstrap のアセット用 S3 バケット） | 保管料は数セント以下。古いアセットが溜まったら削除する |
+| Route 53 | ホストゾーン（月 0.5 ドル）は既存の支出。サイト用に増えるのは Alias（AWS リソース向けは無料）と ACM 検証 CNAME のクエリだけ |
+| CloudWatch | Function のメトリクス・Budgets は無料枠内。アラームやログを追加しない限り 0 に近い |
+| GitHub Actions | パブリックリポジトリのため無料（AWS の費用ではない） |
+
+実績は、タグの有効化後に Cost Explorer で確認し、月 1 ドルを超えたときは通知メールを手がかりに内訳を調べる。
 
 ## DNS のスナップショット
 
