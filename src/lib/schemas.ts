@@ -44,13 +44,35 @@ export const profileSchema = z
   });
 
 // 作品: src/content/works/<作品ID>.yaml。日英を 1 ファイルに持たせ、作品 ID の食い違いを構造上起こさない。
+// 個別ページ（公開 URL のない作品だけが持つ。ZJS-20）。導入と、節（本文・要点・構成図）の並びで書く。
+const detailPoint = z.strictObject({ label: text, text });
+const diagramNode = z.strictObject({ name: text, note: text.optional() });
+const diagramRow = z.strictObject({ label: text, nodes: z.array(diagramNode).min(1) });
+const detailDiagram = z.strictObject({ caption: text, rows: z.array(diagramRow).min(2) });
+const detailSection = z
+  .strictObject({
+    heading: text,
+    body: z.array(text).min(1).optional(),
+    points: z.array(detailPoint).min(1).optional(),
+    diagram: detailDiagram.optional(),
+  })
+  .refine((section) => section.body || section.points || section.diagram, { error: '本文・要点・構成図のいずれかが必要です' });
+const workDetail = z.strictObject({ lead: text, sections: z.array(detailSection).min(1) });
+
 const workCopy = z.strictObject({
   name: text,
   summary: text,
   imageAlt: text.optional(),
-  // 個別ページの本文（段落の配列）。公開 URL のない作品だけが持つ（ZJS-20）。
-  detail: z.array(text).min(1).optional(),
+  detail: workDetail.optional(),
 });
+
+type WorkDetail = z.infer<typeof workDetail>;
+
+/** 日英で節・要点・構成図の数が揃っているかを見るための形。内容の一致は、プレビュー確認で判断する。 */
+const detailShape = (detail: WorkDetail) =>
+  JSON.stringify(
+    detail.sections.map((s) => [s.body?.length ?? 0, s.points?.length ?? 0, s.diagram?.rows.map((r) => r.nodes.length) ?? null]),
+  );
 
 export const createWorkSchema = (image: z.ZodType) =>
   z
@@ -63,6 +85,9 @@ export const createWorkSchema = (image: z.ZodType) =>
       en: workCopy,
     })
     .superRefine((work, ctx) => {
+      if (work.ja.detail && work.en.detail && detailShape(work.ja.detail) !== detailShape(work.en.detail)) {
+        ctx.addIssue({ code: 'custom', path: ['en', 'detail'], message: '日英で節・本文・要点・構成図の数が揃っていません' });
+      }
       for (const lang of ['ja', 'en'] as const) {
         if (work.image && !work[lang].imageAlt) {
           ctx.addIssue({ code: 'custom', path: [lang, 'imageAlt'], message: '画像があるときは代替テキストが必須です' });

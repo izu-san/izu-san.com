@@ -21,6 +21,8 @@ const work = () => ({
   en: { name: 'Sample', summary: 'Summary' },
 });
 
+const detail = (text: string) => ({ lead: text, sections: [{ heading: text, body: [text] }] });
+
 const fails = (schema: z.ZodType, value: unknown, path: string) => {
   const result = schema.safeParse(value);
   assert.equal(result.success, false);
@@ -59,8 +61,8 @@ test('作品: 画像があるのに代替テキストが無ければエラー', 
 test('作品: URL を省略できるのは、個別ページの本文（日英）があるときだけ（公開 URL が無い作品）', () => {
   const w: any = work();
   delete w.url;
-  w.ja.detail = ['本文'];
-  w.en.detail = ['Body'];
+  w.ja.detail = detail('本文');
+  w.en.detail = detail('Body');
   assert.equal(workSchema.safeParse(w).success, true);
 });
 
@@ -142,14 +144,29 @@ test('稼働状況: 日付の形式と種別を検査する', () => {
 test('作品: URL がなければ個別ページの本文（日英）が必須', () => {
   const { url: _url, ...noUrl } = work();
   fails(workSchema, noUrl, 'ja.detail');
-  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: ['本文'] } }, 'en.detail');
+  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: detail('本文') } }, 'en.detail');
   assert.equal(
-    workSchema.safeParse({ ...noUrl, ja: { ...noUrl.ja, detail: ['本文'] }, en: { ...noUrl.en, detail: ['Body'] } }).success,
+    workSchema.safeParse({ ...noUrl, ja: { ...noUrl.ja, detail: detail('本文') }, en: { ...noUrl.en, detail: detail('Body') } }).success,
     true,
   );
 });
 
 test('作品: URL があるときは個別ページの本文を付けられない', () => {
-  fails(workSchema, { ...work(), ja: { ...work().ja, detail: ['本文'] } }, 'ja.detail');
+  fails(workSchema, { ...work(), ja: { ...work().ja, detail: detail('本文') } }, 'ja.detail');
   assert.equal(workSchema.safeParse(work()).success, true);
+});
+
+test('作品: 個別ページは日英で節・要点・構成図の数が揃っていなければエラー', () => {
+  const { url: _url, ...noUrl } = work();
+  const ja = detail('本文');
+  const en = { ...detail('Body'), sections: [...detail('Body').sections, { heading: 'More', body: ['More'] }] };
+  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: ja }, en: { ...noUrl.en, detail: en } }, 'en.detail');
+});
+
+test('作品: 節には本文・要点・構成図のいずれかが必要で、構成図は 2 行以上', () => {
+  const { url: _url, ...noUrl } = work();
+  const empty = { lead: 'x', sections: [{ heading: 'x' }] };
+  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: empty }, en: { ...noUrl.en, detail: empty } }, 'ja.detail.sections.0');
+  const one = { lead: 'x', sections: [{ heading: 'x', diagram: { caption: 'x', rows: [{ label: 'x', nodes: [{ name: 'x' }] }] } }] };
+  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: one }, en: { ...noUrl.en, detail: one } }, 'ja.detail.sections.0.diagram.rows');
 });
