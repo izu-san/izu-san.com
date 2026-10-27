@@ -31,7 +31,7 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
 >
   <a class="skip-link" href="#main">{ui[lang].skip}</a>
 
-  <SiteHeader lang={lang} name={profile.data.name} switchHref={pagePaths[other]} base={paths[lang]} current="works" />
+  <SiteHeader lang={lang} name={profile.data.name} switchHref={pagePaths[other]} base={paths[lang]} items={detail.sections.map((section, i) => ({ id: `sec-${i}`, label: section.heading }))} />
 
   <main id="main" class="work-detail">
     <div class="wrap">
@@ -72,8 +72,8 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
       </header>
 
       {detail.sections.map((section, i) => (
-        <section class="work-section" aria-labelledby={`sec-${i}`}>
-          <h2 id={`sec-${i}`}><span class="work-sec-no" aria-hidden="true">SEC.{String(i + 1).padStart(2, '0')}</span>{section.heading}</h2>
+        <section id={`sec-${i}`} class="work-section" aria-labelledby={`sec-${i}-h`}>
+          <h2 id={`sec-${i}-h`}><span class="work-sec-no" aria-hidden="true">SEC.{String(i + 1).padStart(2, '0')}</span>{section.heading}</h2>
           {section.body?.map((paragraph) => <p>{paragraph}</p>)}
           {section.diagram && (
             <figure class="diagram">
