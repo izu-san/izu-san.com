@@ -36,6 +36,7 @@ interface Ui {
   approval: { designed: string; checked: string; approved: string; you: string; open: string; invite: string };
   present: string;
   footer: string;
+  analytics: { text: string; link: string };
   colophon: { built: string; fonts: string; source: string; sourceLink: string; buildDate: string };
   copy: { label: string; done: string; aria: string };
 }
@@ -83,6 +84,10 @@ export const ui: Record<Lang, Ui> = {
       sourceLink: 'GitHub',
       buildDate: '最終ビルド',
     },
+    analytics: {
+      text: 'アクセス状況の把握に Cloudflare Web Analytics を使っています。Cookie は使わず、閲覧数・参照元・国・端末・URL だけを集計します。',
+      link: 'Cloudflare Web Analytics について',
+    },
     copy: { label: 'コピー', done: 'コピーしました', aria: 'メールアドレスをコピー' },
   },
   en: {
@@ -125,6 +130,10 @@ export const ui: Record<Lang, Ui> = {
       source: 'Source code (MIT)',
       sourceLink: 'GitHub',
       buildDate: 'Last build',
+    },
+    analytics: {
+      text: 'This site uses Cloudflare Web Analytics to understand traffic. It sets no cookies and counts only page views, referrers, countries, devices and URLs. ',
+      link: 'About Cloudflare Web Analytics',
     },
     copy: { label: 'Copy', done: 'Copied', aria: 'Copy the email address' },
   },

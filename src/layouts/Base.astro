@@ -10,15 +10,27 @@ interface Props {
   description?: string;
   /** 日英の alternate / canonical を出さない（404 用）。 */
   noindex?: boolean;
+  /** OGP の画像の代替テキストと、JSON-LD（Person）の内容。公開リンクだけを渡す。 */
+  share?: { name: string; imageAlt: string; sameAs: string[] };
 }
 
-const { lang, title, description, noindex = false } = Astro.props;
+const { lang, title, description, noindex = false, share } = Astro.props;
 // プレビューのビルドは PUBLIC_SITE_ENV=preview を付ける。検索に載せない。
 const isPreview = import.meta.env.PUBLIC_SITE_ENV === 'preview';
 // 解析タグ（Cloudflare Web Analytics）は本番のビルドで、トークンがあるときだけ入れる。
 // トークンは公開される値なので、Actions の変数 PUBLIC_CF_ANALYTICS_TOKEN で渡す。
 const analyticsToken = isPreview ? '' : (import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN ?? '').trim();
 const url = (l: Lang) => new URL(paths[l], Astro.site).href;
+// OGP の og:url と og:image は、環境の URL を指す（プレビューは認証の内側で共有カードを確認できる）。
+const origin = isPreview ? 'https://preview.izu-san.com' : Astro.site!.origin;
+const ogUrl = (l: Lang) => new URL(paths[l], origin).href;
+const ogLocale = { ja: 'ja_JP', en: 'en_US' } as const;
+const otherLocale = languages.filter((l) => l !== lang).map((l) => ogLocale[l]);
+const ogImage = new URL(`/og/${lang}.png`, origin).href;
+const jsonLd = share && [
+  { '@context': 'https://schema.org', '@type': 'Person', name: share.name, url: ogUrl(lang), description, sameAs: share.sameAs },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Izu-san', url: origin + '/', inLanguage: lang },
+];
 ---
 
 <!doctype html>
@@ -35,6 +47,31 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
         <link rel="canonical" href={url(lang)} />
         {languages.map((l) => <link rel="alternate" hreflang={l} href={url(l)} />)}
         <link rel="alternate" hreflang="x-default" href={url('ja')} />
+      </>
+    )}
+    <meta name="theme-color" content="#0e1114" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {share && (
+      <>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Izu-san" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={ogUrl(lang)} />
+        <meta property="og:locale" content={ogLocale[lang]} />
+        {otherLocale.map((l) => <meta property="og:locale:alternate" content={l} />)}
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={share.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={share.imageAlt} />
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
       </>
     )}
   </head>
