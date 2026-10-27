@@ -14,6 +14,9 @@ interface Props {
 const { lang, title, description, noindex = false } = Astro.props;
 // プレビューのビルドは PUBLIC_SITE_ENV=preview を付ける。検索に載せない。
 const isPreview = import.meta.env.PUBLIC_SITE_ENV === 'preview';
+// 解析タグ（Cloudflare Web Analytics）は本番のビルドで、トークンがあるときだけ入れる。
+// トークンは公開される値なので、Actions の変数 PUBLIC_CF_ANALYTICS_TOKEN で渡す。
+const analyticsToken = isPreview ? '' : (import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN ?? '').trim();
 const url = (l: Lang) => new URL(paths[l], Astro.site).href;
 ---
 
@@ -36,5 +39,12 @@ const url = (l: Lang) => new URL(paths[l], Astro.site).href;
   </head>
   <body>
     <slot />
+    {analyticsToken && (
+      <script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={JSON.stringify({ token: analyticsToken })}
+      />
+    )}
   </body>
 </html>
