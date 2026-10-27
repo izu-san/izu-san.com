@@ -1,12 +1,15 @@
-// IzuSanDeployer（OIDC・インフラ更新用ロール・CloudFormation の実行ポリシー）を、管理者の認証情報で適用する。
+// IzuSanDeployer（OIDC・インフラ更新用ロール・CloudFormation の実行ポリシー）と IzuSanCost（費用通知）を、管理者の認証情報で適用する。
 //   pnpm deployer:apply
+//   COST_ALERT_EMAIL=<通知先> pnpm cost:apply
 // 手順: cdk synth → 変更セットの作成 → 内容の表示 → 確認（y/N）→ 実行 → 完了待ち。
 // bootstrap より先に適用できるよう、`cdk deploy` ではなく CloudFormation で直接適用する（docs/infra.md）。
 import { execFileSync } from 'node:child_process';
 import { createInterface } from 'node:readline/promises';
 
 const REGION = 'us-east-1';
-const STACK = 'IzuSanDeployer';
+// 既定は IzuSanDeployer。引数で IzuSanCost（費用通知、ZJS-13）も適用できる。
+const STACK = process.argv[2] ?? 'IzuSanDeployer';
+if (!['IzuSanDeployer', 'IzuSanCost'].includes(STACK)) throw new Error(`未対応のスタック: ${STACK}`);
 const TEMPLATE = `cdk.out/${STACK}.template.json`;
 
 function run(command: string, args: string[], options: { allowFailure?: boolean } = {}): string {
