@@ -8,13 +8,107 @@ ja:
   name: 自宅サーバーの運用
   summary: GitLab、YouTrack、Zulip などを自宅のサーバーで動かしています。Compose の設定を Git で管理し、変更は CI で検査しています。公開リポジトリはありません。
   detail:
-    - GitLab、YouTrack、Zulip などのサービスを、自宅のサーバーで Docker Compose を使って動かしています。
-    - Compose の設定ファイルは Git で管理し、変更は CI で検査してから反映します。このサイトのチケットと仕様書も、ここで動かしている YouTrack で管理しています。
-    - 運用の記録と設定は非公開のため、公開リポジトリはありません。
+    lead: GitLab、YouTrack、Zulip などを、自宅のサーバーで Docker Compose を使って動かしています。開発と日々の連絡を、外部のサービスに預けずに回すための環境です。設定は Git で管理し、変更は CI で検査します。
+    sections:
+      - heading: 動かしているもの
+        points:
+          - label: GitLab
+            text: リポジトリと CI。設定の検査や、失敗の通知もここで動かしています。
+          - label: YouTrack
+            text: チケットと、仕様書などのナレッジベース。このサイトの仕様書とチケットも、ここで管理しています。
+          - label: Zulip
+            text: チャットと通知。CI の失敗や、サーバーの異常の知らせを受け取ります。
+          - label: 管理と認証
+            text: パスワード管理と、サービスの認証基盤も、自前で動かしています。
+      - heading: 構成
+        diagram:
+          caption: 自宅サーバーの構成（上から下へ、リクエストが流れます）
+          rows:
+            - label: 入口
+              nodes:
+                - name: リバースプロキシ
+                  note: 外からの接続を受け、各サービスへ振り分ける
+            - label: サービス
+              nodes:
+                - name: GitLab
+                - name: YouTrack
+                - name: Zulip
+                - name: 管理と認証
+            - label: 運用
+              nodes:
+                - name: 監視
+                  note: 異常を Zulip に通知
+                - name: バックアップ
+                  note: 定時の取得と、復元の訓練
+                - name: CI
+                  note: 設定の検査と、失敗の通知
+      - heading: 設定の管理
+        body:
+          - サーバー上のファイルが正で、リポジトリは履歴と検査のための写しです。サーバーで Compose を変更したら、同期のスクリプトで取り込み、差分を確認してコミットします。
+        points:
+          - label: 秘匿値の検査
+            text: CI で、パスワードやトークンの混入を検査します。
+          - label: 構文の検査
+            text: Compose の YAML の構文を、CI で検査します。
+          - label: 失敗の通知
+            text: パイプラインが失敗すると、Zulip に通知が届きます。
+          - label: 入れないもの
+            text: シークレットとデータは、リポジトリに入れません。Compose は、変数やファイルの参照で読みます。
+      - heading: 運用で気をつけていること
+        body:
+          - バックアップは、取るだけでなく、復元を試す訓練まで含めて運用しています。サービスの死活は監視の仕組みで見ています。
+          - 運用の記録と設定は非公開のため、公開リポジトリはありません。
 en:
   name: Home server operations
   summary: Runs GitLab, YouTrack, Zulip and other services on my home server. The Compose files are kept in Git and checked in CI. There is no public repository.
   detail:
-    - I run GitLab, YouTrack, Zulip and other services on my home server with Docker Compose.
-    - The Compose files are kept in Git, and changes are checked in CI before they are applied. The tickets and spec of this site are managed in the YouTrack that runs there.
-    - The operational records and configuration are private, so there is no public repository.
+    lead: I run GitLab, YouTrack, Zulip and other services on my home server with Docker Compose. It is an environment for keeping development and daily communication going without handing them to outside services. The configuration is kept in Git, and changes are checked in CI.
+    sections:
+      - heading: What runs on it
+        points:
+          - label: GitLab
+            text: Repositories and CI. Configuration checks and failure notifications also run here.
+          - label: YouTrack
+            text: Tickets and a knowledge base for specs and the like. The spec and tickets of this site are managed here too.
+          - label: Zulip
+            text: Chat and notifications. It receives CI failures and server alerts.
+          - label: Secrets and authentication
+            text: A password manager and an authentication service for the other services also run on it.
+      - heading: Architecture
+        diagram:
+          caption: Home server architecture (requests flow from top to bottom)
+          rows:
+            - label: Entrance
+              nodes:
+                - name: Reverse proxy
+                  note: Takes connections from outside and routes them to each service
+            - label: Services
+              nodes:
+                - name: GitLab
+                - name: YouTrack
+                - name: Zulip
+                - name: Secrets and authentication
+            - label: Operations
+              nodes:
+                - name: Monitoring
+                  note: Reports problems to Zulip
+                - name: Backups
+                  note: Regular backups and restore drills
+                - name: CI
+                  note: Checks the configuration and reports failures
+      - heading: Managing the configuration
+        body:
+          - The files on the server are the source of truth; the repository is a copy for history and checks. When I change Compose on the server, I pull it in with a sync script, review the diff and commit.
+        points:
+          - label: Secret scan
+            text: CI checks that no passwords or tokens slip in.
+          - label: Syntax check
+            text: CI checks the syntax of the Compose YAML.
+          - label: Failure alerts
+            text: When a pipeline fails, a notification arrives in Zulip.
+          - label: What stays out
+            text: Secrets and data are not kept in the repository. Compose reads them through variables and file references.
+      - heading: What I keep in mind
+        body:
+          - Backups are not only taken but also practised, and restore drills are part of the routine. Whether services are alive is watched by a monitoring setup.
+          - The operational records and configuration are private, so there is no public repository.

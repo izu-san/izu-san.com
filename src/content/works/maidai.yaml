@@ -1,4 +1,5 @@
 order: 3
+image: ../../assets/works/maidai.png
 tech:
   - Python
   - Electron
@@ -6,14 +7,110 @@ tech:
 ja:
   name: MaidAI
   summary: ローカル LLM で動く、会話 AI「梨乃」を常駐させるデスクトップクライアントです。会話、音声、生活通知をつなぎ、操作は承認と監査を通す設計にしています。個人利用のため、公開リポジトリはありません。
+  imageAlt: デスクトップのエディタの上に常駐し、吹き出しで話しかける梨乃（開発中の画面）
   detail:
-    - ローカル LLM で動く会話 AI「梨乃」を、デスクトップに常駐させるクライアントです。クラウドの API に会話を預けず、手元の環境で動かすことを前提にしています。
-    - 会話、音声、生活通知を 1 つのクライアントにつないでいます。梨乃が提案する操作は、そのまま実行せず、承認を通し、記録（監査）を残す設計です。
-    - 実装は Python と Electron です。個人利用のため、公開リポジトリはありません。
+    lead: ローカル LLM で動く会話 AI「梨乃」を、デスクトップに常駐させるクライアントです。会話するだけでなく、頼まれた操作も実行します。実行の前に必ず人の承認を通し、記録を残すところが、いちばんのこだわりです。
+    sections:
+      - heading: 梨乃にできること
+        points:
+          - label: 会話
+            text: ローカル LLM で応答します。クラウドの API に会話を預けず、手元の環境で動かすことを前提にしています。キャラクター設定を持たせ、画面の隅から話しかけてきます。
+          - label: 音声
+            text: 音声での入力と読み上げに対応しています。読み上げは、音声と口の動きを合わせて表示します。
+          - label: 生活通知
+            text: 予定や日々の通知を、梨乃が声をかける形で知らせます。
+          - label: 操作
+            text: 配信ソフト、スマートホーム機器、カメラ、Windows の操作を、ツールとして呼び出せます。
+      - heading: 仕組み
+        body:
+          - デスクトップのクライアントが画面と入力を受け持ち、会話、エージェント、ツールは別の部分に分けています。部分どうしはイベントバスでつなぎ、機能を足しても他の部分を書き換えずに済むようにしています。
+        diagram:
+          caption: MaidAI の構成（上から下へ、依頼が流れます）
+          rows:
+            - label: 表示
+              nodes:
+                - name: デスクトップクライアント
+                  note: 梨乃の表示、吹き出し、入力（Electron）
+            - label: 会話
+              nodes:
+                - name: 会話サービス
+                  note: ローカル LLM、キャラクター設定
+                - name: イベントバス
+                  note: 各部分をつなぐ
+            - label: 判断と承認
+              nodes:
+                - name: エージェント
+                  note: 頼まれた操作を計画
+                - name: 承認
+                  note: 実行の前に人が確認
+                - name: 監査
+                  note: 承認と結果を記録
+            - label: ツール
+              nodes:
+                - name: 配信
+                - name: スマートホーム
+                - name: カメラ
+                - name: Windows
+      - heading: 安全の考え方
+        body:
+          - 操作は、梨乃が提案する段階と、実行する段階を分けています。実行の前に、何をするのかを平易な文で示して承認を求め、承認と結果を監査の記録に残します。
+          - 個人利用の道具なので、公開リポジトリはありません。
+      - heading: 開発の進め方
+        body:
+          - 開発は WSL の dev 環境で行い、本番の Windows とは分けています。仕様と手順は YouTrack に集めています。
+          - 実装やレビューは AI エージェントに役割を分けて任せ、要件の判断と受け入れは自分で行います。ローカル LLM の制約（コンテキストの長さや GPU への収まり）も見ながら、任せる範囲を絞っています。
 en:
   name: MaidAI
   summary: A desktop client that keeps a conversational AI character, Rino, running on a local LLM. It connects chat, voice and daily-life notifications, and routes actions through approval and audit. Built for personal use, so there is no public repository.
+  imageAlt: Rino standing over an editor on the desktop and speaking in a speech bubble (development build)
   detail:
-    - A desktop client that keeps a conversational AI character, Rino, running on a local LLM. It is designed to run on my own machine instead of handing conversations to a cloud API.
-    - "It connects chat, voice and daily-life notifications in one client. Actions that Rino proposes are not executed directly: they go through approval and leave an audit record."
-    - It is built with Python and Electron. It is for personal use, so there is no public repository.
+    lead: A desktop client that keeps a conversational AI character, Rino, running on a local LLM. Rino does not only talk; it carries out requested actions. What I care about most is that every action goes through human approval first and leaves a record.
+    sections:
+      - heading: What Rino can do
+        points:
+          - label: Chat
+            text: Replies come from a local LLM. It is designed to run on my own machine instead of handing conversations to a cloud API. Rino has a character setting and speaks from a corner of the screen.
+          - label: Voice
+            text: It supports voice input and spoken replies. Speech is shown with the mouth movement matched to the voice.
+          - label: Daily notices
+            text: Schedules and everyday notifications are delivered by Rino calling out to me.
+          - label: Actions
+            text: It can call tools for streaming software, smart-home devices, a camera and Windows.
+      - heading: How it works
+        body:
+          - The desktop client handles the screen and input, while chat, the agent and the tools are separate parts. They are connected through an event bus, so adding a feature does not mean rewriting the others.
+        diagram:
+          caption: MaidAI architecture (requests flow from top to bottom)
+          rows:
+            - label: Display
+              nodes:
+                - name: Desktop client
+                  note: Rino's display, speech bubble and input (Electron)
+            - label: Chat
+              nodes:
+                - name: Chat service
+                  note: Local LLM, character setting
+                - name: Event bus
+                  note: Connects the parts
+            - label: Decide and approve
+              nodes:
+                - name: Agent
+                  note: Plans the requested action
+                - name: Approval
+                  note: A human confirms before it runs
+                - name: Audit
+                  note: Records approvals and results
+            - label: Tools
+              nodes:
+                - name: Streaming
+                - name: Smart home
+                - name: Camera
+                - name: Windows
+      - heading: Approach to safety
+        body:
+          - Proposing an action and carrying it out are separate steps. Before anything runs, Rino explains in plain language what it is about to do and asks for approval; the approval and the result are written to an audit record.
+          - It is a tool for personal use, so there is no public repository.
+      - heading: How it is developed
+        body:
+          - Development happens in a dev environment on WSL, separate from the production setup on Windows. Specs and procedures are collected in YouTrack.
+          - Implementation and review are split among AI agents by role, while I make the requirement decisions and accept the results. I keep the delegated scope narrow, keeping in mind the limits of a local LLM (context length and what fits on the GPU).

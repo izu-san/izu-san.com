@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Base from '../layouts/Base.astro';
 import { loadSiteContent } from '../lib/content.ts';
 import { languages, otherLang, paths, ui, workPath, type Lang } from '../lib/i18n.ts';
@@ -13,7 +15,7 @@ const t = ui[lang];
 const other = otherLang(lang);
 const { profile, works } = await loadSiteContent(lang);
 const work = works.find((w) => w.id === id)!;
-const detail = work.copy.detail ?? [];
+const detail = work.copy.detail!;
 const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)])) as Record<Lang, string>;
 ---
 
@@ -43,17 +45,64 @@ const pagePaths = Object.fromEntries(languages.map((l) => [l, workPath(l, id)]))
   <main id="main" class="work-detail">
     <div class="wrap">
       <p class="work-crumb"><a href={`${paths[lang]}#works`}>← {t.work.back}</a></p>
-      <p class="section-title work-kicker">{t.work.navLabel}</p>
-      <h1>{work.copy.name}</h1>
-      <div class="prose">
-        {detail.map((paragraph) => <p>{paragraph}</p>)}
-      </div>
-      <div class="recipe">
-        <p class="sr-only">{t.tech}:</p>
-        <ul class="recipe-in">
-          {work.tech.map((name) => <li>{name}</li>)}
-        </ul>
-      </div>
+      <header class="work-hero">
+        <div class="work-intro">
+          <p class="section-title work-kicker">{t.work.navLabel}</p>
+          <h1>{work.copy.name}</h1>
+          <p class="work-lead">{detail.lead}</p>
+          <div class="recipe">
+            <p class="sr-only">{t.tech}:</p>
+            <ul class="recipe-in">
+              {work.tech.map((name) => <li>{name}</li>)}
+            </ul>
+          </div>
+        </div>
+        {work.image && (
+          <figure class="work-figure">
+            <Image
+              src={work.image as ImageMetadata}
+              alt={work.copy.imageAlt!}
+              widths={[288, 576]}
+              sizes="(min-width: 48rem) 18rem, 100vw"
+              width={288}
+              format="webp"
+              loading="eager"
+            />
+          </figure>
+        )}
+      </header>
+
+      {detail.sections.map((section, i) => (
+        <section class="work-section" aria-labelledby={`sec-${i}`}>
+          <h2 id={`sec-${i}`}><span class="work-sec-no" aria-hidden="true">SEC.{String(i + 1).padStart(2, '0')}</span>{section.heading}</h2>
+          {section.body?.map((paragraph) => <p>{paragraph}</p>)}
+          {section.diagram && (
+            <figure class="diagram">
+              <ol class="diagram-rows">
+                {section.diagram.rows.map((row) => (
+                  <li class="diagram-row">
+                    <p class="diagram-label">{row.label}</p>
+                    <ul class="diagram-nodes">
+                      {row.nodes.map((node) => (
+                        <li class="diagram-node">
+                          <span class="diagram-name">{node.name}</span>
+                          {node.note && <span class="diagram-note">{node.note}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+              <figcaption>{section.diagram.caption}</figcaption>
+            </figure>
+          )}
+          {section.points && (
+            <dl class="work-points">
+              {section.points.map((point) => <><dt>{point.label}</dt><dd>{point.text}</dd></>)}
+            </dl>
+          )}
+        </section>
+      ))}
     </div>
   </main>
 
