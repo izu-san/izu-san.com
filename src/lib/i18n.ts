@@ -33,8 +33,25 @@ interface Ui {
     source: string;
     goal: string;
     wall: string;
-    results: Record<'goal' | 'out' | 'wall' | 'gap' | 'loop', string>;
+    results: Record<'goal' | 'wrong' | 'short' | 'out' | 'wall' | 'gap' | 'loop', string>;
     clear: string;
+    stageGroup: string;
+    stage: string;
+    stageCleared: string;
+    order: string;
+    sourceNote: string;
+    machineNote: string;
+    machine: string;
+    sourceLabel: string;
+    goalLabel: string;
+    delivered: string;
+    next: string;
+    belts: string;
+    best: string;
+    newBest: string;
+    storage: string;
+    clearRecords: string;
+    recordsCleared: string;
   };
   approval: { designed: string; checked: string; approved: string; you: string; open: string; invite: string };
   present: string;
@@ -59,7 +76,7 @@ export const ui: Record<Lang, Ui> = {
     newTab: '（新しいタブで開きます）',
     factory: {
       summary: 'ミニ工場（遊べます）',
-      intro: '入口（IN）から出口（OUT）まで素材を運んでください。マスを押すたびにベルトの向きが変わります（→ ↓ ← ↑ → なし）。',
+      intro: 'ベルトの向きを変えて、入口の素材を出口（OUT）まで運んでください。マスを押すたびにベルトの向きが変わります（→ ↓ ← ↑ → なし）。',
       noscript: 'このパズルには JavaScript が必要です。連絡先は上のリンクからどうぞ。',
       boardLabel: 'ミニ工場の盤面',
       run: '起動',
@@ -70,13 +87,32 @@ export const ui: Record<Lang, Ui> = {
       goal: '出口（ここへ運びます）',
       wall: '壁',
       results: {
-        goal: '出口に届きました。',
+        goal: '出口に届きました。注文どおりです。',
+        wrong: '出口に届きましたが、注文と素材が違います。',
+        short: '組み立て機に、素材が足りません。2 つ入れてください。',
         out: '盤面の外へ落ちました。',
-        wall: '壁にぶつかりました。',
+        wall: '壁か入口にぶつかりました。',
         gap: 'ベルトが途切れています。',
         loop: 'ぐるぐる回っています。',
       },
-      clear: '納品完了です。遊んでくれてありがとうございます。よければ連絡をください。',
+      clear: '全ステージ、納品完了です。遊んでくれてありがとうございます。よければ連絡をください。',
+      stageGroup: 'ステージの選択',
+      stage: 'ステージ {n}',
+      stageCleared: 'クリア済み',
+      order: '注文: {m} をそろえて、出口へ運ぶ',
+      sourceNote: 'IN{k}: {m}',
+      machineNote: 'MIX は組み立て機です。入ってきた素材を 2 つ合わせて、右へ送り出します。',
+      machine: '組み立て機（素材を 2 つ合わせて、右へ送り出します）',
+      sourceLabel: '入口 {k}（素材: {m}）',
+      goalLabel: '出口（注文: {m}）',
+      delivered: '納品した素材でできているのは、この作品です。',
+      next: '次のステージへ',
+      belts: 'ベルト {n} 本でクリア',
+      best: '最少 {n} 本',
+      newBest: '最少を更新しました。',
+      storage: 'クリアの記録は、このブラウザーの中にだけ保存します。サーバーには送りません。',
+      clearRecords: '記録を消す',
+      recordsCleared: '記録を消しました。',
     },
     approval: { designed: '設計', checked: '審査', approved: '承認', you: 'あなた', open: '未承認', invite: 'お気軽にご連絡ください' },
     present: '現在',
@@ -107,7 +143,7 @@ export const ui: Record<Lang, Ui> = {
     newTab: '(opens in a new tab)',
     factory: {
       summary: 'Mini factory (playable)',
-      intro: 'Carry the material from the entrance (IN) to the exit (OUT). Each press on a cell turns its belt (→ ↓ ← ↑ → none).',
+      intro: 'Turn the belts to carry the materials from the entrances to the exit (OUT). Each press on a cell turns its belt (→ ↓ ← ↑ → none).',
       noscript: 'This puzzle needs JavaScript. You can reach me through the links above.',
       boardLabel: 'Mini factory board',
       run: 'Start',
@@ -118,13 +154,32 @@ export const ui: Record<Lang, Ui> = {
       goal: 'Exit (carry the material here)',
       wall: 'Wall',
       results: {
-        goal: 'It reached the exit.',
+        goal: 'It reached the exit. The order is complete.',
+        wrong: 'It reached the exit, but the materials do not match the order.',
+        short: 'The assembler needs two materials. Send in one more.',
         out: 'It fell off the board.',
-        wall: 'It hit a wall.',
+        wall: 'It hit a wall or an entrance.',
         gap: 'The belt is broken.',
         loop: 'It is going around in circles.',
       },
-      clear: 'Delivered! Thanks for playing. Feel free to get in touch.',
+      clear: 'All stages delivered! Thanks for playing. Feel free to get in touch.',
+      stageGroup: 'Choose a stage',
+      stage: 'Stage {n}',
+      stageCleared: 'cleared',
+      order: 'Order: bring {m} together to the exit',
+      sourceNote: 'IN{k}: {m}',
+      machineNote: 'MIX is an assembler. It joins two incoming materials and sends them out to the right.',
+      machine: 'Assembler (joins two materials and sends them out to the right)',
+      sourceLabel: 'Entrance {k} (material: {m})',
+      goalLabel: 'Exit (order: {m})',
+      delivered: 'These materials make up this project.',
+      next: 'Next stage',
+      belts: 'Cleared with {n} belts',
+      best: 'Best: {n} belts',
+      newBest: 'New best.',
+      storage: 'Your clear records are saved only in this browser. Nothing is sent to a server.',
+      clearRecords: 'Clear records',
+      recordsCleared: 'Records cleared.',
     },
     approval: { designed: 'Designed by', checked: 'Checked by', approved: 'Approved by', you: 'You', open: 'Pending', invite: 'Feel free to get in touch' },
     present: 'present',
