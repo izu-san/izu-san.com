@@ -9,5 +9,5 @@ items:
       en: Used to automate E2E tests for web, smartphone and desktop apps.
   - name: Python
     usage:
-      ja: HDD の性能テスト、CLI を使った QA テスト、REST API のテストの自動化に使ってきました。
-      en: Has been used to automate HDD performance tests, CLI-driven QA tests and REST API tests.
+      ja: HDD/SSD の性能テスト、CLI を使った QA テスト、REST API のテストの自動化に使ってきました。
+      en: Has been used to automate HDD/SSD performance tests, CLI-driven QA tests and REST API tests.
