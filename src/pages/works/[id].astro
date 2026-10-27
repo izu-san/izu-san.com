@@ -1,0 +1,12 @@
+---
+import WorkDetail from '../../components/WorkDetail.astro';
+import { loadWorkDetails } from '../../lib/content.ts';
+
+export async function getStaticPaths() {
+  return (await loadWorkDetails()).map(({ id }) => ({ params: { id } }));
+}
+
+const { id } = Astro.params;
+---
+
+<WorkDetail lang="ja" id={id!} />

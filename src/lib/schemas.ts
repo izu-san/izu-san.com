@@ -48,6 +48,8 @@ const workCopy = z.strictObject({
   name: text,
   summary: text,
   imageAlt: text.optional(),
+  // 個別ページの本文（段落の配列）。公開 URL のない作品だけが持つ（ZJS-20）。
+  detail: z.array(text).min(1).optional(),
 });
 
 export const createWorkSchema = (image: z.ZodType) =>
@@ -61,10 +63,16 @@ export const createWorkSchema = (image: z.ZodType) =>
       en: workCopy,
     })
     .superRefine((work, ctx) => {
-      if (!work.image) return;
       for (const lang of ['ja', 'en'] as const) {
-        if (!work[lang].imageAlt) {
+        if (work.image && !work[lang].imageAlt) {
           ctx.addIssue({ code: 'custom', path: [lang, 'imageAlt'], message: '画像があるときは代替テキストが必須です' });
+        }
+        // 個別ページは公開 URL のない作品に限る。URL があるなら外部へ、無ければ個別ページへつなぐ。
+        if (!work.url && !work[lang].detail) {
+          ctx.addIssue({ code: 'custom', path: [lang, 'detail'], message: 'URL がない作品は個別ページの本文（detail）が必須です' });
+        }
+        if (work.url && work[lang].detail) {
+          ctx.addIssue({ code: 'custom', path: [lang, 'detail'], message: 'URL がある作品に個別ページの本文（detail）は付けられません' });
         }
       }
     });

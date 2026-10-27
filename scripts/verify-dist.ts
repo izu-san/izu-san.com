@@ -78,6 +78,7 @@ export function verifyDist(dist: string, env: SiteEnv): string[] {
   if (env === 'preview' && notFound.includes(ANALYTICS_HOST)) errors.push('404.html: プレビューに解析タグがある');
 
   verifySeo(dist, env, pages, read, errors);
+  verifyWorkDetails(dist, env, pages, read, errors);
   return errors;
 }
 
@@ -128,6 +129,60 @@ function verifySeo(
   } else {
     if (!/^Disallow:\s*\/\s*$/m.test(robots)) errors.push('robots.txt: プレビューが全面拒否でない');
     if (/Sitemap:/i.test(robots) || sitemap.includes('<loc>')) errors.push('プレビューのサイトマップに URL がある');
+  }
+}
+
+/**
+ * 公開 URL のない作品の個別ページ（ZJS-20）を検証する。
+ * トップのパネルが内部リンクで指すページを個別ページとみなし、日英で揃っていること、
+ * canonical・hreflang・サイトマップ、トップへの戻りリンクを確認する。
+ */
+function verifyWorkDetails(
+  dist: string,
+  env: SiteEnv,
+  pages: Record<'ja' | 'en', string>,
+  read: (rel: string) => string,
+  errors: string[],
+) {
+  const origin = env === 'production' ? 'https://izu-san.com' : 'https://preview.izu-san.com';
+  const ids: Record<'ja' | 'en', string[]> = { ja: [], en: [] };
+  for (const lang of ['ja', 'en'] as const) {
+    const prefix = lang === 'ja' ? '/works/' : '/en/works/';
+    ids[lang] = attrs(pages[lang], 'href')
+      .filter((h) => h.startsWith(prefix))
+      .map((h) => h.slice(prefix.length).replace(/\/$/, ''));
+  }
+  if (ids.ja.join() !== ids.en.join()) errors.push(`日英で個別ページの作品 ID が違う（ja: ${ids.ja.join(',')} / en: ${ids.en.join(',')}）`);
+
+  const sitemap = existsSync(join(dist, 'sitemap.xml')) ? read('sitemap.xml') : '';
+  for (const id of new Set([...ids.ja, ...ids.en])) {
+    const path = (lang: 'ja' | 'en') => (lang === 'ja' ? `/works/${id}/` : `/en/works/${id}/`);
+    for (const lang of ['ja', 'en'] as const) {
+      const file = `${path(lang).slice(1)}index.html`;
+      const html = read(file);
+      if (!html) continue;
+      if (!new RegExp(`<html lang="${lang}"`).test(html)) errors.push(`${file}: lang が ${lang} でない`);
+      if (!html.includes(`<link rel="canonical" href="https://izu-san.com${path(lang)}">`)) errors.push(`${file}: canonical が正しくない`);
+      for (const [hreflang, href] of [['ja', path('ja')], ['en', path('en')], ['x-default', path('ja')]]) {
+        if (!html.includes(`hreflang="${hreflang}" href="https://izu-san.com${href}"`)) errors.push(`${file}: hreflang=${hreflang} が正しくない`);
+      }
+      if (metaContent(html, 'property', 'og:url') !== `${origin}${path(lang)}`) errors.push(`${file}: og:url が環境の URL でない`);
+      if (!metaContent(html, 'property', 'og:title')) errors.push(`${file}: og:title がない`);
+      if (!/<h1[ >]/.test(html)) errors.push(`${file}: h1 がない`);
+      const noindex = /<meta name="robots" content="[^"]*noindex/.test(html);
+      if (env === 'preview' && !noindex) errors.push(`${file}: プレビューなのに noindex がない`);
+      if (env === 'production' && noindex) errors.push(`${file}: 本番なのに noindex がある`);
+      if (env === 'preview' && html.includes(ANALYTICS_HOST)) errors.push(`${file}: プレビューに解析タグがある`);
+      // トップ（作品一覧）へ戻れる。
+      const top = lang === 'ja' ? '/#works' : '/en/#works';
+      if (!attrs(html, 'href').includes(top)) errors.push(`${file}: 作品一覧への戻りリンク（${top}）がない`);
+      // 日英切り替えは、もう一方の言語の同じ作品へ向く。
+      const other = lang === 'ja' ? 'en' : 'ja';
+      if (!attrs(html, 'href').includes(path(other))) errors.push(`${file}: ${other} 版への切り替えリンクがない`);
+      if (env === 'production' && !sitemap.includes(`<loc>https://izu-san.com${path(lang)}</loc>`)) {
+        errors.push(`sitemap.xml: ${path(lang)} がない`);
+      }
+    }
   }
 }
 

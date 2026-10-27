@@ -1099,3 +1099,29 @@ button.factory-cell:hover {
     transition: border-color 0.2s;
   }
 }
+
+/* 作品の個別ページ（公開 URL のない作品。ZJS-20） */
+.work-detail {
+  padding-block: var(--space);
+}
+
+.work-detail .wrap {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 48rem;
+}
+
+.work-crumb {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.work-kicker::before {
+  content: none;
+}
+
+.work-detail .prose {
+  display: grid;
+  gap: 1rem;
+  color: var(--text);
+}
