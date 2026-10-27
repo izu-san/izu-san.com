@@ -5,7 +5,7 @@ import Base from '../layouts/Base.astro';
 import ExtLink from './ExtLink.astro';
 import FactoryPuzzle from './FactoryPuzzle.astro';
 import { loadSiteContent } from '../lib/content.ts';
-import { otherLang, paths, sectionIds, ui, type Lang } from '../lib/i18n.ts';
+import { otherLang, paths, sectionIds, ui, workPath, type Lang } from '../lib/i18n.ts';
 
 interface Props {
   lang: Lang;
@@ -128,7 +128,11 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
           {works.map((w, i) => (
             <li class="panel reveal" style={`--i: ${i}`}>
               <h3 class="panel-title">
-                {w.url ? <ExtLink class="panel-link" href={w.url} lang={lang}>{w.copy.name}</ExtLink> : w.copy.name}
+                {w.url ? (
+                  <ExtLink class="panel-link" href={w.url} lang={lang}>{w.copy.name}</ExtLink>
+                ) : (
+                  <a class="panel-link" href={workPath(lang, w.id)}>{w.copy.name}<span class="sr-only"> — {t.work.more}</span></a>
+                )}
               </h3>
               <p class="panel-body">{w.copy.summary}</p>
               <div class="recipe">

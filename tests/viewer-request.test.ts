@@ -93,6 +93,23 @@ for (const [name, run] of [['本番', (r: Req) => production(r)], ['プレビュ
     }
   });
 
+  test(`${name}: 作品の個別ページを index.html へ書き換え、/ なしと index.html 付きは 301 で転送する`, () => {
+    assert.equal(run(get('/works/maidai/')).uri, '/works/maidai/index.html');
+    assert.equal(run(get('/en/works/home-server/')).uri, '/en/works/home-server/index.html');
+    for (const [from, to] of [
+      ['/works/maidai', '/works/maidai/'],
+      ['/works/maidai/index.html', '/works/maidai/'],
+      ['/en/works/home-server', '/en/works/home-server/'],
+      ['/en/works/home-server/index.html', '/en/works/home-server/'],
+    ]) {
+      const res = run(get(from));
+      assert.equal(res.statusCode, 301, from);
+      assert.equal(res.headers!.location.value, to);
+    }
+    // 作品 ID の形式でないものは書き換えない
+    for (const uri of ['/works/', '/works/A_b/', '/works/a/b/', '/en/works/']) assert.equal(run(get(uri)).uri, uri);
+  });
+
   test(`${name}: 転送でクエリ文字列を保つ`, () => {
     const res = run(get('/en', { querystring: { a: { value: '1' }, b: { value: '', multiValue: [{ value: 'x' }, { value: 'y' }] } } }));
     assert.equal(res.headers!.location.value, '/en/?a=1&b=x&b=y');

@@ -2,6 +2,8 @@ export const languages = ['ja', 'en'] as const;
 export type Lang = (typeof languages)[number];
 
 export const paths: Record<Lang, string> = { ja: '/', en: '/en/' };
+/** 公開 URL のない作品の個別ページ（ZJS-20）。 */
+export const workPath = (lang: Lang, id: string) => (lang === 'ja' ? `/works/${id}/` : `/en/works/${id}/`);
 export const otherLang = (lang: Lang): Lang => (lang === 'ja' ? 'en' : 'ja');
 
 // セクション ID は日英で共通にする。
@@ -15,6 +17,7 @@ interface Ui {
   switchLabel: string;
   switchText: string;
   tech: string;
+  work: { more: string; back: string; navLabel: string };
   status: { title: string; updated: string; kinds: Record<'running' | 'idle' | 'next', string> };
   token: { label: string };
   newTab: string;
@@ -50,6 +53,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: '言語',
     switchText: 'English',
     tech: '使用技術',
+    work: { more: '詳しく見る', back: '個人開発に戻る', navLabel: '作品' },
     status: { title: '稼働状況', updated: '最終更新', kinds: { running: '稼働中', idle: '待機中', next: '次' } },
     token: { label: '次トークン候補' },
     newTab: '（新しいタブで開きます）',
@@ -97,6 +101,7 @@ export const ui: Record<Lang, Ui> = {
     switchLabel: 'Language',
     switchText: '日本語',
     tech: 'Tech',
+    work: { more: 'Read more', back: 'Back to projects', navLabel: 'Project' },
     status: { title: 'Status', updated: 'Last updated', kinds: { running: 'NOW RUNNING', idle: 'IDLE', next: 'NEXT' } },
     token: { label: 'Next token' },
     newTab: '(opens in a new tab)',

@@ -2,7 +2,7 @@
 // AUTH_REQUIRED と AUTH_SHA256 は、デプロイ時に infra/lib/viewer-request.ts が先頭へ差し込む。
 //  - AUTH_REQUIRED が true のとき（プレビュー）、すべてのリクエストに Basic 認証を求める。
 //    認証はキャッシュ参照より前に行う。AUTH_SHA256 が不正・空なら、全リクエストを拒否する。
-//  - 認証の後で、URL の書き換え（/ → /index.html）と 301 転送を行う。
+//  - 認証の後で、URL の書き換え（/ → /index.html、/works/<ID>/ → /works/<ID>/index.html）と 301 転送を行う。
 // ログは出力しない（資格情報の漏えい経路になるため）。
 
 var crypto = require('crypto');
@@ -68,7 +68,11 @@ function handler(event) {
   if (uri === '/en') return redirect(request, '/en/');
   if (uri === '/index.html') return redirect(request, '/');
   if (uri === '/en/index.html') return redirect(request, '/en/');
+  // 作品の個別ページ（ZJS-20）: 末尾の / なしと index.html 付きは、/ 付きへ転送する。
+  var work = /^(\/en)?\/works\/([a-z0-9-]+)(\/index\.html)?$/.exec(uri);
+  if (work) return redirect(request, (work[1] || '') + '/works/' + work[2] + '/');
   if (uri === '/') request.uri = '/index.html';
   else if (uri === '/en/') request.uri = '/en/index.html';
+  else if (/^(\/en)?\/works\/[a-z0-9-]+\/$/.test(uri)) request.uri = uri + 'index.html';
   return request;
 }

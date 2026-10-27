@@ -56,9 +56,11 @@ test('作品: 画像があるのに代替テキストが無ければエラー', 
   fails(workSchema, { ...work(), image: 'a.png' }, 'ja.imageAlt');
 });
 
-test('作品: URL は省略できる（公開 URL が無い作品）', () => {
+test('作品: URL を省略できるのは、個別ページの本文（日英）があるときだけ（公開 URL が無い作品）', () => {
   const w: any = work();
   delete w.url;
+  w.ja.detail = ['本文'];
+  w.en.detail = ['Body'];
   assert.equal(workSchema.safeParse(w).success, true);
 });
 
@@ -135,4 +137,19 @@ test('稼働状況: 日付の形式と種別を検査する', () => {
   assert.equal(statusSchema.safeParse(ok).success, true);
   fails(statusSchema, { ...ok, updated: '2026-13-01' }, 'updated');
   fails(statusSchema, { ...ok, kind: 'stopped' }, 'kind');
+});
+
+test('作品: URL がなければ個別ページの本文（日英）が必須', () => {
+  const { url: _url, ...noUrl } = work();
+  fails(workSchema, noUrl, 'ja.detail');
+  fails(workSchema, { ...noUrl, ja: { ...noUrl.ja, detail: ['本文'] } }, 'en.detail');
+  assert.equal(
+    workSchema.safeParse({ ...noUrl, ja: { ...noUrl.ja, detail: ['本文'] }, en: { ...noUrl.en, detail: ['Body'] } }).success,
+    true,
+  );
+});
+
+test('作品: URL があるときは個別ページの本文を付けられない', () => {
+  fails(workSchema, { ...work(), ja: { ...work().ja, detail: ['本文'] } }, 'ja.detail');
+  assert.equal(workSchema.safeParse(work()).success, true);
 });
