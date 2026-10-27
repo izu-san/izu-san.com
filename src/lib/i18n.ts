@@ -36,6 +36,8 @@ interface Ui {
   approval: { designed: string; checked: string; approved: string; you: string; open: string; invite: string };
   present: string;
   footer: string;
+  colophon: { built: string; fonts: string; source: string; sourceLink: string; buildDate: string };
+  copy: { label: string; done: string; aria: string };
 }
 
 // Record<Lang, Ui> により、片方の言語の欠落は型チェック（pnpm check）で失敗する。
@@ -74,6 +76,14 @@ export const ui: Record<Lang, Ui> = {
     approval: { designed: '設計', checked: '審査', approved: '承認', you: 'あなた', open: '未承認', invite: 'お気軽にご連絡ください' },
     present: '現在',
     footer: '© 2026 Izu-san',
+    colophon: {
+      built: 'Astro で作り、AWS CDK で管理した S3 と CloudFront から配信しています。',
+      fonts: '書体: Zen Kaku Gothic New、Dela Gothic One（SIL OFL 1.1）',
+      source: 'ソースコード（MIT）',
+      sourceLink: 'GitHub',
+      buildDate: '最終ビルド',
+    },
+    copy: { label: 'コピー', done: 'コピーしました', aria: 'メールアドレスをコピー' },
   },
   en: {
     nav: { profile: 'Profile', works: 'Projects', skills: 'Skills', career: 'Career', contact: 'Contact' },
@@ -109,5 +119,13 @@ export const ui: Record<Lang, Ui> = {
     approval: { designed: 'Designed by', checked: 'Checked by', approved: 'Approved by', you: 'You', open: 'Pending', invite: 'Feel free to get in touch' },
     present: 'present',
     footer: '© 2026 Izu-san',
+    colophon: {
+      built: 'Built with Astro and served from S3 and CloudFront, managed with AWS CDK.',
+      fonts: 'Typefaces: Zen Kaku Gothic New, Dela Gothic One (SIL OFL 1.1)',
+      source: 'Source code (MIT)',
+      sourceLink: 'GitHub',
+      buildDate: 'Last build',
+    },
+    copy: { label: 'Copy', done: 'Copied', aria: 'Copy the email address' },
   },
 };

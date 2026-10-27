@@ -16,6 +16,8 @@ const t = ui[lang];
 const other = otherLang(lang);
 const { profile, works, skills, career, status, links } = await loadSiteContent(lang);
 const { Content } = profile;
+// ビルド日（日本時間）。CI の実行時刻の影響を受けないよう、タイムゾーンを固定する。
+const buildDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date());
 const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word === word);
 ---
 
@@ -175,7 +177,7 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
             <div class="approval-open"><dt>{t.approval.approved}</dt><dd>{t.approval.open}</dd></div>
           </dl>
           <p class="approval-note">{t.approval.invite}</p>
-          <ul class="panels panels-links">
+          <ul class="panels panels-links" data-copy-label={t.copy.label} data-copy-done={t.copy.done} data-copy-aria={t.copy.aria}>
             {links.map((l, i) => (
               <li class="panel reveal" style={`--i: ${i}`}>
                 <h3 class="panel-title"><ExtLink class="panel-link" href={l.url} lang={lang}>{l.label}</ExtLink></h3>
@@ -192,6 +194,12 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
     <div class="wrap">
       <FactoryPuzzle lang={lang} links={links} />
       <p>{t.footer}</p>
+      <p class="colophon">
+        {t.colophon.built}<br />
+        {t.colophon.fonts}<br />
+        {t.colophon.source}: <ExtLink href="https://github.com/izu-san/izu-san.com" lang={lang}>{t.colophon.sourceLink}</ExtLink><br />
+        {t.colophon.buildDate}: <time datetime={buildDate}>{buildDate}</time>
+      </p>
     </div>
   </footer>
 
@@ -234,6 +242,37 @@ const tokenFor = (word: string) => profile.data.tokens?.find((tk) => tk.word ===
         targets.forEach((el) => io.observe(el));
       } else {
         targets.forEach((el) => el.classList.add('is-visible'));
+      }
+    }
+
+    // メールアドレスのコピー（Clipboard API が使えるときだけボタンを足す。mailto: のリンクはそのまま残す）。
+    const contactList = document.querySelector<HTMLElement>('.panels-links');
+    if (contactList && navigator.clipboard) {
+      const { copyLabel = '', copyDone = '', copyAria = '' } = contactList.dataset;
+      for (const panel of contactList.querySelectorAll<HTMLElement>('.panel')) {
+        const mail = panel.querySelector<HTMLAnchorElement>('a[href^="mailto:"]');
+        if (!mail) continue;
+        const address = mail.getAttribute('href')!.slice('mailto:'.length);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-button';
+        button.textContent = copyLabel;
+        button.setAttribute('aria-label', `${copyAria}: ${address}`);
+        const status = document.createElement('span');
+        status.className = 'copy-status';
+        status.setAttribute('role', 'status');
+        let timer: number | undefined;
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(address);
+            status.textContent = copyDone;
+            clearTimeout(timer);
+            timer = window.setTimeout(() => (status.textContent = ''), 2500);
+          } catch {
+            status.textContent = '';
+          }
+        });
+        panel.append(button, status);
       }
     }
 
