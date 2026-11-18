@@ -1,0 +1,158 @@
+order: 5
+tech:
+  - Rust
+  - wgpu
+  - WASAPI
+  - SQLite
+ja:
+  name: Hibiki
+  summary: Windows 11 用の、BMS 形式の音楽ゲームのプレイヤーです。Rust で実装し、音と判定の遅れを小さくすることを重視しています。画面は自分で設計し、選曲、プレイ、リザルト、リプレイ、OBS との連携を備えています。個人利用のため、公開リポジトリはありません。
+  detail:
+    lead: Windows 11 用の、BMS 形式の音楽ゲームのプレイヤーです。Rust で実装しています。重視しているのは、音と判定の遅れを小さくすることと、画面と音を安定して動かすことです。画面のデザインも、既存のものを使わず、自分で作っています。
+    sections:
+      - heading: できること
+        points:
+          - label: プレイ
+            text: 7 鍵の譜面を遊べます。判定、クリアゲージ、スコアを記録します。
+          - label: 選曲とリザルト
+            text: 難易度表、検索、お気に入りから曲を選べます。続けて遊ぶコースにも対応しています。リザルトでは、スコアと、自己ベストなど過去のプレイとの差を見られます。
+          - label: リプレイ
+            text: プレイを保存して、あとで再生できます。1 曲のリプレイは、画面と同じ見た目の mp4 動画に書き出せます。
+          - label: 独自の機能
+            text: 譜面の特徴を 6 つの軸で数値にして示す機能と、苦手な配置を譜面の上に示す機能があります。選曲やリザルトでは、事前に作った音声が読み上げます。
+          - label: 外部との連携
+            text: ランキングサーバーへの接続、配信ソフト OBS に出す表示、背景動画、YouTube のチャットからの曲リクエストに対応しています。
+      - heading: 仕組み
+        body:
+          - 機能ごとに、16 個の部品（Rust のクレート）に分けています。画面の処理は、描画や OS から切り離しているので、Linux 上の自動テストでも確かめられます。
+        diagram:
+          caption: Hibiki の構成（上の部品が、下の部品を使います）
+          rows:
+            - label: アプリ本体
+              nodes:
+                - name: 実行ファイル
+                  note: 画面の切り替え、設定、ウィンドウ
+            - label: 画面
+              nodes:
+                - name: 画面の処理
+                  note: 選曲・プレイ・リザルト・設定の動き
+                - name: 描画
+                  note: GPU で画面を描く（wgpu）
+            - label: ゲームの中心
+              nodes:
+                - name: 譜面の読み込み
+                  note: BMS 形式のファイルを読む
+                - name: 判定
+                  note: スコア、ゲージ、リプレイ
+                - name: 音声
+                  note: 音の再生と合成
+                - name: 入力
+                  note: キーボードとゲームパッド
+            - label: 保存と通信
+              nodes:
+                - name: データベース
+                  note: 曲とスコアを保存（SQLite）
+                - name: ランキング接続
+                  note: ランキングサーバーとやり取り
+                - name: OBS 連携
+                  note: 配信用の表示を出すサーバー
+      - heading: 技術スタック
+        points:
+          - label: 言語
+            text: Rust です。ガベージコレクションによる一時停止が起きないため、選びました。
+          - label: 音声
+            text: Windows の WASAPI 排他モードで、音を直接出力します。音を重ねて合成するミキサーも自作です。
+          - label: 入力
+            text: Raw Input で、キーボードとゲームパッドを読みます。
+          - label: 描画
+            text: wgpu（D3D12）で描きます。文字は、描いた字形を保存して使い回します。
+          - label: データ
+            text: SQLite（rusqlite）に、曲とスコアを保存します。
+          - label: 通信
+            text: OBS に出す表示は axum（HTTP）、ランキングや難易度表の取得は ureq を使っています。
+          - label: 動画
+            text: 背景動画は Media Foundation で再生し、開けない動画は ffmpeg で補います。
+      - heading: 遅延を小さくする工夫
+        body:
+          - 音の出力、判定、入力を扱うスレッドでは、メモリの確保、ロックの待ち、ファイルの読み書き、ログの出力を避けています。ほかのスレッドとは、待ち合わせの要らないキューで受け渡します。
+          - プレイ中は、画面の動きを判定とコンボの表示に絞ります。重い処理は、曲が始まる前に済ませるか、別のスレッドで行います。
+      - heading: 開発の進め方
+        body:
+          - 仕様書はリポジトリの中に置き、コードに合わせて保ちます。新しい機能は、実装の前に仕様書へ書きます。
+          - 実装はテスト駆動で進めます。設計、実装、テストの実行、レビューを、AI エージェントに役割を分けて任せ、要件の判断と受け入れは自分で行います。CI では、書式、コードの静的解析（clippy。Linux と Windows 向け）、テストを実行します。
+en:
+  name: Hibiki
+  summary: A player for BMS-format rhythm games on Windows 11. Written in Rust, with a focus on keeping the delay in audio and judgment small. The screens are designed from scratch, and it covers song select, play, results, replays and OBS integration. Built for personal use, so there is no public repository.
+  detail:
+    lead: A player for BMS-format rhythm games on Windows 11, written in Rust. What I care about most is keeping the delay in audio and judgment small, and keeping the screen and sound stable. The screen design is my own as well, not borrowed from an existing one.
+    sections:
+      - heading: What it can do
+        points:
+          - label: Play
+            text: You can play 7-key charts. It records judgments, the clear gauge and the score.
+          - label: Song select and results
+            text: You can pick songs by difficulty table, search or favorites, and play courses (several songs in a row). On the result screen you can compare your score with past plays such as your personal best.
+          - label: Replays
+            text: Plays can be saved and watched later. A single-song replay can be exported as an mp4 video that looks the same as on screen.
+          - label: Original features
+            text: One shows the character of a chart as numbers on 6 axes, and another marks the patterns you find hard on top of the chart. On song select and results, pre-generated voice lines are read aloud.
+          - label: External connections
+            text: It connects to a ranking server, shows overlays in the streaming software OBS, plays background videos, and takes song requests from YouTube chat.
+      - heading: How it works
+        body:
+          - It is split into 16 parts (Rust crates), one for each area. The screen logic is kept apart from rendering and the OS, so it can also be tested in automated tests on Linux.
+        diagram:
+          caption: Hibiki architecture (each part uses the parts below it)
+          rows:
+            - label: App
+              nodes:
+                - name: Executable
+                  note: Screen flow, settings and the window
+            - label: Screens
+              nodes:
+                - name: Screen logic
+                  note: How song select, play, results and settings behave
+                - name: Rendering
+                  note: Draws the screen on the GPU (wgpu)
+            - label: Game core
+              nodes:
+                - name: Chart loading
+                  note: Reads BMS files
+                - name: Judgment
+                  note: Score, gauge and replays
+                - name: Audio
+                  note: Plays and mixes sound
+                - name: Input
+                  note: Keyboard and gamepad
+            - label: Storage and network
+              nodes:
+                - name: Database
+                  note: Stores songs and scores (SQLite)
+                - name: Ranking link
+                  note: Talks to the ranking server
+                - name: OBS link
+                  note: Server that provides the overlay for streaming
+      - heading: Tech stack
+        points:
+          - label: Language
+            text: Rust, chosen because it has no garbage-collection pauses.
+          - label: Audio
+            text: Sound is sent directly through Windows WASAPI exclusive mode. The mixer that layers sounds together is my own.
+          - label: Input
+            text: Raw Input reads the keyboard and gamepads.
+          - label: Rendering
+            text: Drawn with wgpu (D3D12). Text reuses glyph shapes that have already been drawn.
+          - label: Data
+            text: Songs and scores are stored in SQLite (rusqlite).
+          - label: Networking
+            text: The OBS overlay uses axum (HTTP); fetching rankings and difficulty tables uses ureq.
+          - label: Video
+            text: Background videos play through Media Foundation, with ffmpeg as a fallback for videos it cannot open.
+      - heading: Keeping the delay small
+        body:
+          - The threads that handle audio output, judgment and input avoid memory allocation, lock waits, file reads and writes, and logging. Data is handed to other threads through queues that do not need to wait for each other.
+          - During play, screen motion is limited to the judgment and combo display. Heavy work is finished before the song starts or done on another thread.
+      - heading: How it is developed
+        body:
+          - The spec lives in the repository and is kept in line with the code. A new feature is written into the spec before it is implemented.
+          - Implementation is test-driven. Design, implementation, test runs and review are split among AI agents by role, while I make the requirement decisions and accept the results. CI runs formatting, static analysis of the code (clippy, for Linux and Windows) and the tests.
