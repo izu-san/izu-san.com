@@ -57,7 +57,7 @@ interface Ui {
   present: string;
   footer: string;
   analytics: { text: string; link: string };
-  colophon: { built: string; fonts: string; source: string; sourceLink: string; buildDate: string };
+  colophon: { built: string; fonts: string; source: string; sourceLink: string; status: string; statusLink: string; buildDate: string };
   copy: { label: string; done: string; aria: string };
 }
 
@@ -122,6 +122,8 @@ export const ui: Record<Lang, Ui> = {
       fonts: '書体: Zen Kaku Gothic New、Dela Gothic One（SIL OFL 1.1）',
       source: 'ソースコード（MIT）',
       sourceLink: 'GitHub',
+      status: '各サービスの稼働状況',
+      statusLink: 'ステータス',
       buildDate: '最終ビルド',
     },
     analytics: {
@@ -189,6 +191,8 @@ export const ui: Record<Lang, Ui> = {
       fonts: 'Typefaces: Zen Kaku Gothic New, Dela Gothic One (SIL OFL 1.1)',
       source: 'Source code (MIT)',
       sourceLink: 'GitHub',
+      status: 'Service status',
+      statusLink: 'Status',
       buildDate: 'Last build',
     },
     analytics: {
