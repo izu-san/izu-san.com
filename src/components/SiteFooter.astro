@@ -26,6 +26,7 @@ const buildDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).f
       {t.colophon.built}<br />
       {t.colophon.fonts}<br />
       {t.colophon.source}: <ExtLink href="https://github.com/izu-san/izu-san.com" lang={lang}>{t.colophon.sourceLink}</ExtLink><br />
+      {t.colophon.status}: <ExtLink href="https://status.izu-san.com" lang={lang}>{t.colophon.statusLink}</ExtLink><br />
       {t.colophon.buildDate}: <time datetime={buildDate}>{buildDate}</time>
     </p>
   </div>
